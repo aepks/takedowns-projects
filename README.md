@@ -4,8 +4,7 @@ Sending Calendar Invites Automatically for Takedowns
 # Program Hierarchy:
 
 ```
->g_api
-  > __init__.py
+> g_api
   > authenticate.py
       calendar_auth():
         # Takes no arguments
@@ -20,7 +19,15 @@ Sending Calendar Invites Automatically for Takedowns
     # Takes no arguments.
     # Instantiate things as needed for the calendar API.
 
-    # Some methods to work with the API.
+    create_event(datetime, meal, individuals): # NOT IMPLEMENTED
+    # Takes arguments:
+      # datetime: The date as a 'datetime' object.
+      # meal: Either 'lunch' or 'dinner'.
+      # individuals: Dictionary of form {name: email}.
+
+    # Checks to see if a takedowns event already exists at the specified time - if so, return False.
+    # Creates a Google Calendar event at the specified time, with appropriate information.
+    # After successful creation, return True.
 
   > sheets_session.py
     Session:
@@ -42,8 +49,25 @@ Sending Calendar Invites Automatically for Takedowns
 
 
   > spreadsheet_config.py
-    JSON object named 'config' of structure:
+    Object 'config' of structure:
     'takedowns_key': [The key for the takedowns list.]
     'roster_key': [The key of the roster.] # NOT IMPLEMENTED  
+
+> main.py # NOT IMPLEMENTED  
+  Session:
+    __init__(self): Initializes values:
+      sheet_session
+      cal_session
+      takedowns_list
+      roster
+
+    process_meal(self, list):
+      # Takes a list of individuals. Using self.roster, cross reference this list to their hawk emails.
+      # Consider using fuzzy string matching, such as the python package 'fuzzywuzzy'.
+      # Builds object of form {name: email}.
+      # Using self.cal_session, create a calendar event for this.
+      # Returns True if all names could be solved, returns False otherwise.
+
+
 
 ```
