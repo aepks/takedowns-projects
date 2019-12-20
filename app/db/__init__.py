@@ -30,8 +30,8 @@ class Session:
     def addUser(self, email, pname):
         c = self.createCursor()
         c.execute("INSERT INTO users VALUES (?, ?, ?)", (None, pname, email))
-        for row in c:
-            uid = row[0]
+        c.execute("SELECT last_insert_rowid()")
+        uid = c.fetchone()[0]
         c.close()
         self.commit()
         return uid  # Working
@@ -78,8 +78,14 @@ class Session:
 
     def getScore(self, uid):
         c = self.createCursor()
-        tdScore = c.execute("SELECT tdScore FROM tdScores WHERE uid = ?", (uid,)).fetchone()[0]
-        penaltyScore = c.execute("SELECT penaltyScore FROM penaltyScores WHERE uid = ?", (uid,)).fetchone()[0]
+        tdScore, penaltyScore = 0, 0
+        testTdScore = c.execute("SELECT tdScore FROM tdScores WHERE uid = ?", (uid,)).fetchone()
+        if testTdScore:
+            tdScore = testTdScore[0]
+        testPenaltyScore = c.execute("SELECT penaltyScore FROM penaltyScores WHERE uid = ?", (uid,)).fetchone()
+        if testPenaltyScore:
+            penaltyScore = testPenaltyScore[0]
+        c.close()
         return tdScore - penaltyScore
 
     def getDates(self, startDate, endDate):  # Working
@@ -87,45 +93,61 @@ class Session:
         return [x for x in c.execute("SELECT dateId, tid FROM schedule WHERE date BETWEEN ? AND ?", (startDate, endDate))]
 
     def getAssignments(self, dateId):
-        return c.execute("SELECT uid FROM assignments WHERE dateId = ?", (dateId,)).fetchall()
+        c = self.createCursor()
+        try:
+            ret = c.execute("SELECT uid FROM assignments WHERE dateId = ?",(dateId,))
+            ret = bool(ret.fetchone())
+            # print(ret)
+            c.close()
+            return ret
+        except Exception: # If there's no rows returned
+            c.close()
+            return None
+
+    def assignUser(self, dateId, uid):
+        c = self.createCursor()
+        c.execute("INSERT INTO assignments VALUES (?, ?)", (dateId, uid))
+        c.close()
+        self.commit()
+        return True
 
 
-if __name__ == "__main__":
-    conn = sqlite3.connect("takedowns.db")
-    c = conn.cursor()
-    vals = [x for x in c.execute("SELECT dateId, tid FROM schedule WHERE date <= ?", ("2020-04-28T00:00:00",)).fetchall()]
-    print(vals)
-
-    # conn = sqlite3.connect("takedowns.db")
-    # c = conn.cursor()
-    # nonDays = [
-    #     (20, 1, 2020),
-    #     (16, 3, 2020),
-    #     (17, 3, 2020),
-    #     (18, 3, 2020),
-    #     (19, 3, 2020),
-    #     (20, 3, 2020)
-    # ]
-    # forbiddenDays = []
-    # for day in nonDays:
-    #     forbiddenDays.append(datetime.datetime(day=day[0], month=day[1], year=day[2]))
-    #
-    # start = datetime.datetime(day=13, month=1, year=2020)
-    # date = start
-    # end = datetime.datetime(day=9, month=5, year=2020)
-    #
-    # days = [0, 2, 4, 6, 8]
-    #
-    # while (end-start) >= (date-start):
-    #     if date.weekday() < 5:
-    #         if date not in forbiddenDays:
-    #             base_tid = days[date.weekday()]
-    #             c.execute("INSERT INTO schedule VALUES (?, ?, ?)", (None, date.isoformat(), base_tid))
-    #             c.execute("INSERT INTO schedule VALUES (?, ?, ?)", (None, date.isoformat(), base_tid + 1))
-    #     date = date + datetime.timedelta(days=1)
-    #
-    # c.close()
-    # conn.commit()
+# if __name__ == "__main__":
+#     conn = sqlite3.connect("takedowns.db")
+#     c = conn.cursor()
+#     # vals = [x for x in c.execute("SELECT dateId, tid FROM schedule WHERE date <= ?", ("2020-04-28T00:00:00",)).fetchall()]
+#     # print(vals)
+#     #
+#     # conn = sqlite3.connect("takedowns.db")
+#     # c = conn.cursor()
+#     nonDays = [
+#         (20, 1, 2020),
+#         (16, 3, 2020),
+#         (17, 3, 2020),
+#         (18, 3, 2020),
+#         (19, 3, 2020),
+#         (20, 3, 2020)
+#     ]
+#     forbiddenDays = []
+#     for day in nonDays:
+#         forbiddenDays.append(datetime.datetime(day=day[0], month=day[1], year=day[2]))
+#
+#     start = datetime.datetime(day=13, month=1, year=2020)
+#     date = start
+#     end = datetime.datetime(day=9, month=5, year=2020)
+#
+#     days = [0, 2, 4, 6, 8]
+#
+#     while (end-start) >= (date-start):
+#         if date.weekday() < 5:
+#             if date not in forbiddenDays:
+#                 base_tid = days[date.weekday()]
+#                 c.execute("INSERT INTO schedule VALUES (?, ?, ?)", (None, date.isoformat(), base_tid))
+#                 c.execute("INSERT INTO schedule VALUES (?, ?, ?)", (None, date.isoformat(), base_tid + 1))
+#         date = date + datetime.timedelta(days=1)
+#     #
+#     c.close()
+#     conn.commit()
 
     # ddl = (
     #     """
@@ -138,7 +160,8 @@ if __name__ == "__main__":
     #     """
         # CREATE TABLE IF NOT EXISTS schedule (
         #     dateId INTEGER PRIMARY KEY AUTOINCREMENT,
-        #     date TIMESTAMP
+        #     date TIMESTAMP,
+        #     tid INTEGER,
         #     FOREIGN KEY (tid) REFERENCES takedowns
 		# )
 
