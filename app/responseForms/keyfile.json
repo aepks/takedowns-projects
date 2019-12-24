@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "automated-takedowns",
+  "private_key_id": "b7674aee9225e7b38785316f44f97acf0fdf32e7",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDwGdrfp7hGsVGj\n3YGDWwAdx8fSXUBjyIbtZg6+JpF+BrVAa4CeB75DpGIcDN0wxj+jGIoSzB04pNaR\np0HA+IphH5AbHITlod+hZwkAftwYoTCfyhhTSLowegnFsG8SeuKUOJIgzwPhMKmP\nzdmrHUbohNf+D5SsS0UB5q7ZveKNy9pbZlf8P+atCX3/ckKBzvPgChN4Fs4I1XaR\nPXIxM9Ou7T3zkJM0zqzMHThCfa5HsfVdOeBfp9gcy2nPRwG8VfY8+2w8BCOWr1dY\noqk6w3Q/3imO3gmSGWjXrI71B0ITol8RWL0R6nD8Qe1fEFd0RdBqyYgnFAWvHrpj\nABqAca1DAgMBAAECggEAQ9ZCQWO9THfoBaDdaVQKPd/GxNhlC2xKNwPZUX9LJyzV\nBBz7i2rLpofo0l0OF6xDqZyS0knKTclA+IklqlRuoI9O42IU6F5qdUtLv1CYdfsA\n5nyuj8ViGbU5UpoNX87JerBbFRr4USUzGzbBc7fDY4m5Dwau7lkb57QaHdopCv+M\nGA+JM3Q1sZCYWPgrxKq5Os10DiX26YCyGKXrE2b8hVjaW9G+l0ood2/QE5Add5Rb\najsJp9OZaWBbJ4hBpKkD5VxcPcWaN4twJkcXQToJ7flBMHyg5xxc85SkJOijKfAN\nZn+0DLXggI42GcnUXAee1cBK/YyWNnfM07s/h/2OFQKBgQD7Mb05JhO7/zFCsu6Z\nSjOcs2Bzl9VZbFhmhPqaDfV2SkCoESNJa72UecGCrgwFCkDZAwIH+YyCZVKwO82I\n5u1Um3L+cSBJeConJCz54JShr3tZ9CGKLeBMR9sm997+vJtswHBATmwYXNf+CopA\n9zAM3Geu+2q358m3HEOilQfVLwKBgQD0scjm1GIjs0fvn8OreRdnt2DXk9sMlOrl\n5yrFXz0Q99kyks+xSF5cuqBYiTG9CtfJNGDd/j78ziC9LBhy90IeoQ1qPpWEUOtE\nKLfxeaxgbyywUiXkF9quuArCGlUFqc+wMBzUfp2qOMb27WLvOB3jZCS+P2AdaMsH\nuITi4l0MLQKBgEIRKfie+C/JBdbKIxE0P/DmCOc+NwIHChUkwpjENRxAmVLa9xH3\ngWxMvcW2KzkkIjwxm1Ynn3ooViA+CmgIfMF1BUDA1kIcldGnpSCvncgM1H+rQysJ\nt+W4PH66UO9lAegPkTaIqcual8CcWxKNMRkg2zBdtgraruY3S962HdJHAoGAa2F5\noJKjXrdWYjniTGWfd8xpmzEvd54CV1HS2zqoOcIKdr8mlc4EWv0rUK8kPKl9eLab\nq8/fJGHwzBOFxy3qvjY/BNjiFGbOV+LmlfmnQ8qF+fqS1j4BoZryXavgk9OpaNA0\nVqwZ1JGF/ua9++zMcPWJilOVglJyhrja2BYubyECgYEA1iLyT3/vgp3pF1bZ72Ma\n18XczpSBtsbUM+TIoglCe7TqUxG8q1pbO9C9S0m0224gKXQZbBl0yBRtpkX97Yxj\nKmpiS/7N3UlVZOpN4lKJrJaQ6LfXihQhTyhwKe5SiBZ+klWFyW+1TkCRz6Zg8YFR\n3GVovkXMZaQBEkvon8wYnQ8=\n-----END PRIVATE KEY-----\n",
+  "client_email": "takedownworker@automated-takedowns.iam.gserviceaccount.com",
+  "client_id": "109681971871376724111",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/takedownworker%40automated-takedowns.iam.gserviceaccount.com"
+}

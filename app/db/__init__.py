@@ -92,6 +92,13 @@ class Session:
         c = self.createCursor()
         return [x for x in c.execute("SELECT dateId, tid FROM schedule WHERE date BETWEEN ? AND ?", (startDate, endDate))]
 
+    def clearDate(self, dateId):
+        c = self.createCursor()
+        c.execute("DELETE FROM assignments WHERE dateId = ?", (dateId,))
+        self.commit()
+        c.close()
+        return True
+
     def getAssignments(self, dateId):
         c = self.createCursor()
         try:

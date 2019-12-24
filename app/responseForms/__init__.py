@@ -12,8 +12,17 @@ class Session:
         )
 
         self.gc = gspread.authorize(credentials)
-        self.responseWks = self.gc.open_by_key("1JRcWGXM_KOfFOzNYdNrH71XbymgYNeiWCXHoi-6ST1U")
-        self.responseSheet = self.responseWks.worksheet("Form Responses 1")
+        self.responseWks = self.gc.open_by_key(
+            "1JRcWGXM_KOfFOzNYdNrH71XbymgYNeiWCXHoi-6ST1U")
+        self.responseSheet = self.responseWks.worksheet(
+            "Form Responses 1")
+
+        self.takedownsWks = self.gc.open_by_key(
+            "1imtbQeB367RogqzJ5hnPXW8U8BzTkMUOL4-fmqBm2Rw"
+        )
+        self.takedownsSheet = self.takedownsWks.worksheet(
+            "Takedowns"
+        )
 
     def getResponses(self):
         responses = self.responseSheet.get_all_values()[1:]
@@ -24,8 +33,12 @@ class Session:
                 responses_dict[response[1]] = response[1:]
         return list(responses_dict.values())
 
+    def updateTakedownsForm(self):
+        pass
+
     def getPenalties(self):
         pass
+
 
 if __name__ == "__main__":
     session = Session()
