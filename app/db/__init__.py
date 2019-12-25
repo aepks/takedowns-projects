@@ -29,7 +29,8 @@ class Session:
 
     def addUser(self, email, pname):
         c = self.createCursor()
-        c.execute("INSERT INTO users VALUES (?, ?, ?)", (None, pname, email))
+        c.execute("INSERT INTO users VALUES (?, ?, ?)", (
+            None, pname.strip(), email))
         c.execute("SELECT last_insert_rowid()")
         uid = c.fetchone()[0]
         c.close()
@@ -92,6 +93,13 @@ class Session:
         c = self.createCursor()
         return [x for x in c.execute("SELECT dateId, tid FROM schedule WHERE date BETWEEN ? AND ?", (startDate, endDate))]
 
+    def getPname(self, uid):
+        c = self.createCursor()
+        c.execute("SELECT pname FROM users WHERE uid = ?", (uid,))
+        uid = c.fetchone()[0]
+        c.close()
+        return uid
+
     def clearDate(self, dateId):
         c = self.createCursor()
         c.execute("DELETE FROM assignments WHERE dateId = ?", (dateId,))
@@ -103,11 +111,16 @@ class Session:
         c = self.createCursor()
         try:
             ret = c.execute("SELECT uid FROM assignments WHERE dateId = ?",(dateId,))
-            ret = bool(ret.fetchone())
-            # print(ret)
+            users = []
+            for user in ret:
+                users.append(user[0])
             c.close()
-            return ret
-        except Exception: # If there's no rows returned
+            if users:
+                return users
+            else:
+                return []
+
+        except Exception:  # If there's no rows returned
             c.close()
             return None
 

@@ -33,8 +33,18 @@ class Session:
                 responses_dict[response[1]] = response[1:]
         return list(responses_dict.values())
 
-    def updateTakedownsForm(self):
-        pass
+    def updateTakedownsForm(self, tid, assignments):
+        # Input types:
+        # tid: Integer
+        # assignments: Tuple of form (pname1, pname2, pname3)
+
+        # Use datetime.weekday() and tid to get day, lunch/dinner
+        # Then concatenate all three pnames to a string, and update it.
+
+        assignment = ", ".join(assignments)
+        cell = "C" + str([2, 3, 5, 6, 8, 9, 11, 12, 14, 15][tid])
+        self.takedownsSheet.update_acell(cell, assignment)
+        return True
 
     def getPenalties(self):
         pass
