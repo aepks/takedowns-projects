@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+*.json
+*.keyfile.json
 # C extensions
 *.so
 
@@ -106,5 +108,5 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-# Spreadsheet creds 
+# Spreadsheet creds
 credentials.json
