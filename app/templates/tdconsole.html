@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block app_content %}
+<div class="container">
+  {% if message %}
+  <div class="alert alert-primary" role="alert">
+  {{ message }}
+  </div>
+  {% endif %}
+  {% for row in dataRows %}
+  <div class="row">
+    {% for day in row %}
+    <div class="col-md-2">
+      <h3>{{ day[0] }}</h3>
+      <ol>
+        {% for as in day[1] %}
+        <li>{{ as }}</li>
+        {% endfor %}
+      </ol>
+    </div>
+    {% endfor %}
+    {% if row == dataRows[0] %}
+    <div class="col-md-2">
+      <h3>Date Range Selection</h3>
+      {{ wtf.quick_form(dateInput) }}
+    </div>
+    {% endif %}
+    {% if row == dataRows[1] %}
+    <div class="col-md-2">
+      <h3>Recalculate Dates</h3>
+      {{ wtf.quick_form(clearDate) }}
+    </div>
+    {% endif %}
+    {% if row == dataRows[2] %}
+    <div class="col-md-2">
+      <h3>Award Good Boy Points</h3>
+      {{ wtf.quick_form(gbpf) }}
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'bootstrap/base.html' %}
+{% block title %}
+AEPKS Takedowns Admin Console
+{% endblock %}
+{% block head %}
+{{super()}}
+<link rel="icon" type="image/png" href="https://pks.org/images/pks-active-members.png">
+{% endblock %}
+
+{% block content %}
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-info" role="alert">{{ message }}</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+{# application content needs to be provided in the app_content block #}
+{% block app_content %}{% endblock %}
+{% endblock %}
