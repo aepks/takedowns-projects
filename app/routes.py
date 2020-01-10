@@ -1,6 +1,6 @@
 from app import app
 from flask import request, render_template, make_response, redirect, url_for
-from app.forms import DateInput, ClearDate, GoodBoyPointForm, emailInput
+from app.forms import DateInput, UpdateTakedownsSheet, ClearDate, GoodBoyPointForm, emailInput
 import app.algo as algo
 import app.db as db
 import datetime
@@ -18,6 +18,8 @@ def tdconsole():
     dateInput = DateInput()
     clearDate = ClearDate()
     gbpf = GoodBoyPointForm()
+    utdsf = UpdateTakedownsSheet()
+
     message = None
 
     if gbpf.validate_on_submit():
@@ -49,10 +51,14 @@ def tdconsole():
             endDate, "%m/%d/%Y") + datetime.timedelta(days=1)
         data = algoSesh.getAssignments(startDatetime, endDatetime)
         resp = make_response(render_template(
-            "tdconsole.html", gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=clearDate))
+            "tdconsole.html", utdsf=utdsf, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=clearDate))
         resp.set_cookie("startDate", startDate)
         resp.set_cookie("endDate", endDate)
         return resp
+
+    if utdsf.validate_on_submit():
+        algoSesh.updateTakedowns()
+
 
     if "startDate" in request.cookies:
         startDate = request.cookies.get("startDate")
@@ -61,13 +67,13 @@ def tdconsole():
         endDatetime = datetime.datetime.strptime(
             endDate, "%m/%d/%Y") + datetime.timedelta(days=1)
         data = algoSesh.getAssignments(startDatetime, endDatetime)
-        return render_template("tdconsole.html", gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=clearDate)
+        return render_template("tdconsole.html", utdsf=utdsf, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=clearDate)
 
     else:
         startDatetime = datetime.datetime(day=15, month=1, year=2020)
         endDatetime = startDatetime + datetime.timedelta(days=10)
         data = algoSesh.getAssignments(startDatetime, endDatetime)
-        return render_template("tdconsole.html", gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=clearDate)
+        return render_template("tdconsole.html", utdsf=utdsf, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=clearDate)
 
 
 @app.route("/tdstats", methods=['POST', 'GET'])

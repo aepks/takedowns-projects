@@ -38,6 +38,12 @@
       {{ wtf.quick_form(gbpf) }}
     </div>
     {% endif %}
+    {% if row == dataRows[3] %}
+    <div class="col-md-2">
+      <h3>Update Takedowns Sheet</h3>
+      {{ wtf.quick_form(utdsf) }}
+    </div>
+    {% endif %}
   </div>
   {% endfor %}
 </div>

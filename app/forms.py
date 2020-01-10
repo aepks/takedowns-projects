@@ -48,3 +48,6 @@ class emailInput(FlaskForm):
     email = StringField("Email Address", validators=[
                         DataRequired(), checkEmail])
     submit = SubmitField("Submit Request")
+
+class UpdateTakedownsSheet(FlaskForm):
+    submit = SubmitField("Update Takedowns Sheet")
