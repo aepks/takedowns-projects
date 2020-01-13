@@ -26,36 +26,50 @@ class Session:
         self.penaltiesSheet = self.penaltiesWks.worksheet("Penalties")
 
     def getResponses(self):
-        responses = self.responseSheet.get_all_values()[1:]
-        responses.reverse()
-        responses_dict = {}
-        for response in responses:
-            if response[1] not in responses_dict.keys():
-                responses_dict[response[1]] = response[1:]
-        return list(responses_dict.values())
+        try:
+            responses = self.responseSheet.get_all_values()[1:]
+            responses.reverse()
+            responses_dict = {}
+            for response in responses:
+                if len(response[0]) < 5:
+                    continue
+                if response[1] not in responses_dict.keys():
+                    responses_dict[response[1]] = response[1:]
+            return list(responses_dict.values())
+        except Exception:
+            self.__init__()
+            return self.getResponses()
 
     def updateTakedownsForm(self, tid, assignments):
-        # Input types:
-        # tid: Integer
-        # assignments: Tuple of form (pname1, pname2, pname3)
-        assignment = ", ".join(assignments)
-        cell = "C" + str([2, 3, 5, 6, 8, 9, 11, 12, 14, 15][tid])
-        self.takedownsSheet.update_acell(cell, assignment)
-        return True
+        try:
+            # Input types:
+            # tid: Integer
+            # assignments: Tuple of form (pname1, pname2, pname3)
+            assignment = ", ".join(assignments)
+            cell = "C" + str([2, 3, 5, 6, 8, 9, 11, 12, 14, 15][tid])
+            self.takedownsSheet.update_acell(cell, assignment)
+            return True
+        except Exception:
+            self.__init__()
+            return self.updateTakedownsForm(tid, assignments)
 
     def getPenalties(self):
-        penalties = self.penaltiesSheet.get_all_values()[1:]
-        row = 1
-        ret = []
-        for penalty in penalties:
-            row += 1
-            if len(penalty[4]) > 2:
-                continue
-            else:
-                ret.append(penalty)
-                cell = "E" + str(row)
-                self.penaltiesSheet.update_acell(cell, datetime.datetime.now().isoformat())
-        return ret
+        try:
+            penalties = self.penaltiesSheet.get_all_values()[1:]
+            row = 1
+            ret = []
+            for penalty in penalties:
+                row += 1
+                if len(penalty[4]) > 2:
+                    continue
+                else:
+                    ret.append(penalty)
+                    cell = "E" + str(row)
+                    self.penaltiesSheet.update_acell(cell, datetime.datetime.now().isoformat())
+            return ret
+        except Exception:
+            self.__init__()
+            return self.getPenalties()
 
 if __name__ == "__main__":
     session = Session()

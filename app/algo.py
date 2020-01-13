@@ -80,8 +80,8 @@ class Session:
                 mail.SendMessage(to, subject, message, message)
 
     def updateTakedowns(self):
-        # curDate = datetime.datetime.now()
-        curDate = datetime.datetime(day=1, month=2, year=2020)
+        curDate = datetime.datetime.now()
+        # curDate = datetime.datetime(day=1, month=2, year=2020)
 
         if curDate.weekday() < 5:
             weekStart = curDate - datetime.timedelta(days=curDate.weekday())

@@ -59,7 +59,6 @@ def tdconsole():
     if utdsf.validate_on_submit():
         algoSesh.updateTakedowns()
 
-
     if "startDate" in request.cookies:
         startDate = request.cookies.get("startDate")
         endDate = request.cookies.get("endDate")
@@ -95,9 +94,7 @@ def tdstats():
         resp.set_cookie("userEmail", userEmail)
         return resp
 
-    if "userEmail" not in request.cookies:
-        user = [None]
-    else:
+    try:
         userEmail = request.cookies.get("userEmail")
         uid = dbSession.getUid(userEmail)
         pname = dbSession.getPname(uid)
@@ -105,4 +102,7 @@ def tdstats():
         penaltyScore = dbSession.getTakedownScore(uid)
         userPenalties = dbSession.getPenalties(uid)
         user = [pname, tdScore, penaltyScore, userPenalties]
+    except Exception:  # Likely if user email doesn't exist
+        user = [None]
+
     return render_template("tdstats.html", user=user, emailInput=emailInputForm, avgTakedowns=avgTakedowns, avgPenalty=avgPenalty)
