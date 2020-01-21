@@ -7,6 +7,7 @@ __pycache__/
 *.keyfile.json
 # C extensions
 *.so
+app/mail/keyfile.json
 
 # Distribution / packaging
 .Python
