@@ -58,7 +58,8 @@ class Session:
             assignedUsers = self.dbSession.getAssignments(penaltyMeal)
 
             for user in assignedUsers:
-                self.dbSession.applyPenalty(date, user, penaltyScore, penaltiesApplied)
+                self.dbSession.applyPenalty(
+                    date, user, penaltyScore, penaltiesApplied)
                 # Sending penalty email. This will probably get ugly.
                 to = self.dbSession.getEmail(user)
                 subject = f"Penalty of {penaltyScore} applied to your takedown."
@@ -107,28 +108,38 @@ class Session:
             if self.dbSession.getAssignments(date[0]):
                 continue
             availUsers = self.dbSession.getAvailibility(date[1])
-            # print(availUsers)
-            shuffle(availUsers)
             chosenUsers = []
             newMemberChosen = False
             while len(chosenUsers) < 3:
-                if len(availUsers) == 0:
-                    print("Ran out of people! maybe ask Slack?")
-                    break
-                minUser = availUsers[0]
-                minUserScore = int(self.dbSession.getScore(minUser))
-                for user in availUsers:
-                    if int(self.dbSession.getScore(user)) < minUserScore:
-                        minUser = user
-                        minUserScore = int(self.dbSession.getScore(user))
-                if self.dbSession.isNewMember(minUser) and newMemberChosen:
-                    availUsers.remove(minUser)
-                    continue
-                elif self.dbSession.isNewMember(minUser) and not newMemberChosen:
-                    newMemberChosen = True
+                tdScoreUsers = []
+                userScores = [self.dbSession.getScore(
+                        uid) for uid in availUsers]
+                minScore = min(userScores)
+                for user, score in zip(availUsers, userScores):
+                    if score == minScore:
+                        tdScoreUsers.append(user)
 
-                chosenUsers.append(minUser)
-                availUsers.remove(minUser)
+                # Now, availUsers contains a list of all users with lowest score.
+                availUserTDDate = [(uid, self.dbSession.getMostRecentTakedown(uid, date[0])) for uid in tdScoreUsers]
+                sortedUserTDDates = sorted(
+                    availUserTDDate, key = lambda x: x[0])
+
+                for user in sortedUserTDDates:
+                    if len(chosenUsers) == 3:
+                        break
+                    if (date[0] - user[1]) < 10:
+                        availUsers.remove(user[0])
+                        continue
+                    if self.dbSession.isNewMember(user[0]) and newMemberChosen:
+                        availUsers.remove(user[0])
+                        continue
+                    elif self.dbSession.isNewMember(user[0]) and not newMemberChosen:
+                        newMemberChosen = True
+                        chosenUsers.append(user[0])
+                        availUsers.remove(user[0])
+                    elif not self.dbSession.isNewMember(user[0]):
+                        chosenUsers.append(user[0])
+                        availUsers.remove(user[0])
 
             for user in chosenUsers:
                 self.dbSession.assignUser(date[0], user)
@@ -142,7 +153,7 @@ class Session:
             dates = self.dbSession.getDates(
                 startDate.isoformat(), startDate.isoformat())
         elif startDate and endDate:
-            dates = self.dbSession.getDates(
+            dates=self.dbSession.getDates(
                 startDate.isoformat(), endDate.isoformat())
         else:  # Only endDate specified
             return False
@@ -150,20 +161,20 @@ class Session:
             self.dbSession.clearDate(date[0])
         return True
 
-    def getAssignments(self, startDate=None, endDate=None):
-        dates = self.dbSession.getDates(startDate, endDate)
-        assignments = [[] for x in range(math.ceil(len(dates) / 5) + 1)]
-        currentIndex = 0
+    def getAssignments(self, startDate = None, endDate = None):
+        dates=self.dbSession.getDates(startDate, endDate)
+        assignments=[[] for x in range(math.ceil(len(dates) / 5) + 1)]
+        currentIndex=0
         for date in dates:
             if len(assignments[currentIndex]) == 5:
                 currentIndex += 1
-            assigned = self.dbSession.getAssignments(date[0])
-            data = [None, []]
+            assigned=self.dbSession.getAssignments(date[0])
+            data=[None, []]
             for uid in assigned:
                 data[1].append(self.dbSession.getPname(uid))
-            dateValString = self.dbSession.getIsoDate(date[0])
-            d = datetime.datetime.strptime(dateValString, "%Y-%m-%dT%H:%M:%S")
-            dateString = ["Monday", "Tuesday", "Wednesday",
+            dateValString=self.dbSession.getIsoDate(date[0])
+            d=datetime.datetime.strptime(dateValString, "%Y-%m-%dT%H:%M:%S")
+            dateString=["Monday", "Tuesday", "Wednesday",
                           "Thursday", "Friday"][d.weekday()]
             if date[1] % 2 == 0:
                 dateString += " Lunch"

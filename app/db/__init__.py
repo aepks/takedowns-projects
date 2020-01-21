@@ -105,7 +105,7 @@ class Session:
         if testPenaltyScore:
             penaltyScore = testPenaltyScore[0]
         c.close()
-        return tdScore - penaltyScore
+        return int(tdScore - penaltyScore)
 
     def getDates(self, startDate, endDate):  # Working
         c = self.createCursor()
@@ -160,8 +160,20 @@ class Session:
     def testEmail(self, email):
         c = self.createCursor()
         if c.execute("SELECT pname FROM users WHERE email = ?", (email,)).fetchone():
+            c.close()
             return True
+        c.close()
         return False
+
+    def getMostRecentTakedown(self, uid, dateId):
+        c = self.createCursor()
+        ret = c.execute("SELECT max(dateId) FROM assignments WHERE uid = ? AND dateId < ?", (uid, dateId)).fetchone()
+        c.close()
+        if ret[0]:
+            ret = ret[0]
+            return ret
+        print("Couldn't find most recent takedown.")
+        return 0
 
     def getDate(self, date):
         c = self.createCursor()
