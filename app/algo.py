@@ -19,7 +19,8 @@ class Session:
             "Mild Dirty Food Warmers": .17,  # 1/6
             "Intense Serving Table Not Wiped": .25,  # 1/4
             "Mild Serving Table Not Wiped": .20,  # 1/5
-            "Utensils Not Ran": 0.20  # 1/5
+            "Utensils Not Ran": 0.20,  # 1/5
+            "Cutting Boards Not Cleaned": 0.10  # 1/10
         }
 
     def readResponseForms(self):
@@ -100,7 +101,7 @@ class Session:
 
     def solveDates(self, startDate=None, endDate=None):
         if not startDate or not endDate:
-            startDate = datetime.datetime(day=1, month=2, year=200)  # Debug.
+            startDate = datetime.datetime(day=1, month=2, year=200)  # DEBUG
             endDate = datetime.datetime(day=5, month=7, year=2020)
         dates = self.dbSession.getDates(
             startDate.isoformat(), endDate.isoformat())

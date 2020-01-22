@@ -8,7 +8,6 @@ __pycache__/
 # C extensions
 *.so
 app/mail/keyfile.json
-app/db/takedowns.db
 
 # Distribution / packaging
 .Python
