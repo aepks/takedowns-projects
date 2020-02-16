@@ -8,6 +8,7 @@ __pycache__/
 # C extensions
 *.so
 app/mail/keyfile.json
+app/instacart/creds.py
 
 # Distribution / packaging
 .Python

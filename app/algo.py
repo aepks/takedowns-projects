@@ -34,7 +34,8 @@ class Session:
             date = penalty[0]
             meal = penalty[3]
             penaltiesApplied = penalty[2]
-            penaltyDateTime = parse(date)
+            if date:
+                penaltyDateTime = parse(date)
             simplePenaltyDateTime = datetime.datetime(
                 day=penaltyDateTime.day, month=penaltyDateTime.month, year=penaltyDateTime.year)
             spdtif = simplePenaltyDateTime.isoformat()
@@ -111,24 +112,33 @@ class Session:
             availUsers = self.dbSession.getAvailibility(date[1])
             chosenUsers = []
             newMemberChosen = False
-            while len(chosenUsers) < 3:
+            while availUsers and len(chosenUsers) < 3:
                 tdScoreUsers = []
-                userScores = [self.dbSession.getScore(
-                        uid) for uid in availUsers]
-                minScore = min(userScores)
-                for user, score in zip(availUsers, userScores):
-                    if score == minScore:
+                print(availUsers)
+                userScores = [(uid, self.dbSession.getScore(uid)) for uid in availUsers]
+                minScore = userScores[0][1]
+                for user in userScores:
+                    if user[1] < minScore:
+                        minScore = user[1]
+
+                for user in userScores:
+                    if user[1] == minScore:
                         tdScoreUsers.append(user)
+                    else:
+                        print("User ", user[0], " not added.")
 
                 # Now, availUsers contains a list of all users with lowest score.
-                availUserTDDate = [(uid, self.dbSession.getMostRecentTakedown(uid, date[0])) for uid in tdScoreUsers]
+                availUserTDDate = [(user[0], self.dbSession.getMostRecentTakedown(user[0], date[0])) for user in tdScoreUsers]
                 sortedUserTDDates = sorted(
                     availUserTDDate, key = lambda x: x[0])
+
+                print(sortedUserTDDates)
 
                 for user in sortedUserTDDates:
                     if len(chosenUsers) == 3:
                         break
-                    if (date[0] - user[1]) < 10:
+                    if (date[0] - user[1]) < 16:
+                        print("Less than 3 days since last takedown", user)
                         availUsers.remove(user[0])
                         continue
                     if self.dbSession.isNewMember(user[0]) and newMemberChosen:

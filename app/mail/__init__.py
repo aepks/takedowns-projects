@@ -36,7 +36,7 @@ def SendMessage(to, subject, msgHtml, msgPlain):
     msgPlain -- str
     """
     # [DEBUG]
-    to = "jschmitz2@hawk.iit.edu"
+    # to = "jschmitz2@hawk.iit.edu"
     sender = "jschmitz2@hawk.iit.edu"
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
