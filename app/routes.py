@@ -1,12 +1,16 @@
 from app import app
 from flask import request, render_template, make_response, redirect, url_for
-from app.forms import DateInput, UpdateTakedownsSheet, ClearDate, GoodBoyPointForm, emailInput
+from app.forms import DateInput, UpdateTakedownsSheet, ClearDate, GoodBoyPointForm, emailInput, DefaultInstacartOrderForm
 import app.algo as algo
 import app.db as db
+import app.responseForms as responseForms
+import app.instacart as instacart
 import datetime
 
 algoSesh = algo.Session()
 dbSession = db.Session()
+instacartSession = instacart.Session()
+responseFormsSession = responseForms.Session()
 
 
 @app.route("/", methods=['POST', 'GET'])
@@ -19,10 +23,14 @@ def tdconsole():
     clearDate = ClearDate()
     gbpf = GoodBoyPointForm()
     utdsf = UpdateTakedownsSheet()
+    dio = DefaultInstacartOrderForm()
 
     message = None
+    if dio.password.data and dio.password.data == "hunter2" and dio.validate_on_submit():
+        for row in responseFormsSession.getDefaultInstacartOrder():
+            instacartSession.addItem(row[0], row[2])
 
-    if gbpf.validate_on_submit():
+    if gbpf.submit.data and gbpf.validate_on_submit():
         email = gbpf.email.data
         points = gbpf.points.data
         description = gbpf.description.data
@@ -30,7 +38,7 @@ def tdconsole():
         message = f"Awarded {points} to {email}."
         return redirect(url_for('.tdconsole'))
 
-    if clearDate.validate_on_submit():
+    if clearDate.submit.data and clearDate.validate_on_submit():
         resetDate = clearDate.resetDate.data + "/2020"
         if clearDate.endResetDate.data:
             endResetDate = clearDate.endResetDate.data + "/2020"
@@ -43,7 +51,7 @@ def tdconsole():
         algoSesh.solveDates(startDatetime, endDatetime)
         return redirect(url_for('.tdconsole'))
 
-    if dateInput.validate_on_submit():
+    if dateInput.submit.data and dateInput.validate_on_submit():
         startDate = dateInput.startDate.data + "/2020"
         endDate = dateInput.endDate.data + "/2020"
         startDatetime = datetime.datetime.strptime(startDate, "%m/%d/%Y")
@@ -51,12 +59,12 @@ def tdconsole():
             endDate, "%m/%d/%Y") + datetime.timedelta(days=1)
         data = algoSesh.getAssignments(startDatetime, endDatetime)
         resp = make_response(render_template(
-            "tdconsole.html", utdsf=utdsf, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=clearDate))
+            "tdconsole.html", utdsf=utdsf, dio=dio, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=clearDate))
         resp.set_cookie("startDate", startDate)
         resp.set_cookie("endDate", endDate)
         return resp
 
-    if utdsf.validate_on_submit():
+    if utdsf.submit.data and utdsf.password.data and utdsf.password.data == "hunter2" and utdsf.validate_on_submit():
         algoSesh.updateTakedowns()
 
     if "startDate" in request.cookies:
@@ -66,13 +74,13 @@ def tdconsole():
         endDatetime = datetime.datetime.strptime(
             endDate, "%m/%d/%Y") + datetime.timedelta(days=1)
         data = algoSesh.getAssignments(startDatetime, endDatetime)
-        return render_template("tdconsole.html", utdsf=utdsf, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=clearDate)
+        return render_template("tdconsole.html", utdsf=utdsf, dio=dio, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=clearDate)
 
     else:
         startDatetime = datetime.datetime(day=15, month=1, year=2020)
         endDatetime = startDatetime + datetime.timedelta(days=10)
         data = algoSesh.getAssignments(startDatetime, endDatetime)
-        return render_template("tdconsole.html", utdsf=utdsf, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=clearDate)
+        return render_template("tdconsole.html", utdsf=utdsf, dio=dio, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=clearDate)
 
 
 @app.route("/tdstats", methods=['POST', 'GET'])

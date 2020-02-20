@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, StringField, DecimalField
+from wtforms import SubmitField, StringField, DecimalField, SelectField, PasswordField
 from wtforms.validators import DataRequired, Regexp, ValidationError
 import app.db as db
 
@@ -23,15 +23,10 @@ class ClearDate(FlaskForm):
 
 
 class GoodBoyPointForm(FlaskForm):
-    def checkEmail(form, field):
-        dbSession = db.Session()
-        if dbSession.testEmail(field.data):
-            return True
-        else:
-            raise ValidationError("Email entered is not valid.")
+    dbSession = db.Session()
+    users = dbSession.getUsers()
 
-    email = StringField("Email Address", validators=[
-                        DataRequired(), checkEmail])
+    email = SelectField("User", choices=users, validators=[DataRequired()])
     points = DecimalField("Points Awarded", validators=[DataRequired()])
     description = StringField("Description", validators=[DataRequired()])
     submit = SubmitField("Submit Request")
@@ -50,4 +45,9 @@ class emailInput(FlaskForm):
     submit = SubmitField("Submit Request")
 
 class UpdateTakedownsSheet(FlaskForm):
+    password = PasswordField("What's the password?")
     submit = SubmitField("Update Takedowns Sheet")
+
+class DefaultInstacartOrderForm(FlaskForm):
+    password = PasswordField("What's the password?")
+    submit = SubmitField("Add Default Items")

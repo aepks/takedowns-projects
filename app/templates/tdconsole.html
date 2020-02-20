@@ -47,6 +47,12 @@
       {{ wtf.quick_form(utdsf) }}
     </div>
     {% endif %}
+    {% if row == dataRows[4] %}
+    <div class="col-md-2">
+      <h3>Default Instacart Order</h3>
+      {{ wtf.quick_form(dio) }}
+    </div>
+    {% endif %}
   </div>
   {% endfor %}
 </div>

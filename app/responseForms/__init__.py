@@ -24,6 +24,10 @@ class Session:
         self.penaltiesWks = self.gc.open_by_key(
             "1VPOrmIxbn3PzY71UJXErlM9YZZM54g9vIylKOIqEKLQ")
         self.penaltiesSheet = self.penaltiesWks.worksheet("Penalties")
+        self.instacartOrder = self.gc.open_by_key("1uFJTv9IwJXfhzpSjqQSVLPB0SX3PqYqD2q1-dMJd0lU").worksheet('do').get_all_values()
+
+    def getDefaultInstacartOrder(self):
+        return self.instacartOrder[1:]
 
     def getResponses(self):
         try:

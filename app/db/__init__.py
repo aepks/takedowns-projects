@@ -156,7 +156,6 @@ class Session:
         except Exception:
             return 0
 
-
     def testEmail(self, email):
         c = self.createCursor()
         if c.execute("SELECT pname FROM users WHERE email = ?", (email,)).fetchone():
@@ -250,6 +249,17 @@ class Session:
         ret = c.execute("SELECT uid FROM users WHERE email = ?", (email,)).fetchone()[0]
         c.close()
         return ret
+
+    def getUsers(self):
+        c = self.createCursor()
+        c.execute("SELECT email, pname FROM users ORDER BY pname ASC")
+        ret = [vals for vals in c]
+        c.close()
+        return ret
+
+    def close(self):
+        conn.commit()
+        conn.close()
 
 
 if __name__ == "__main__":
