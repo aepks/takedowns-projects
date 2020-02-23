@@ -9,7 +9,6 @@ import datetime
 
 algoSesh = algo.Session()
 dbSession = db.Session()
-instacartSession = instacart.Session()
 responseFormsSession = responseForms.Session()
 
 
@@ -27,6 +26,7 @@ def tdconsole():
 
     message = None
     if dio.password.data and dio.password.data == "hunter2" and dio.validate_on_submit():
+        instacartSession = instacart.Session()
         for row in responseFormsSession.getDefaultInstacartOrder():
             instacartSession.addItem(row[0], row[2])
 
