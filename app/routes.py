@@ -77,8 +77,8 @@ def tdconsole():
         return render_template("tdconsole.html", utdsf=utdsf, dio=dio, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=clearDate)
 
     else:
-        startDatetime = datetime.datetime(day=15, month=1, year=2020)
-        endDatetime = startDatetime + datetime.timedelta(days=10)
+        startDatetime = datetime.datetime.now() - datetime.timedelta(days=(datetime.datetime.now().weekday() + 7))
+        endDatetime = startDatetime + datetime.timedelta(days=40)
         data = algoSesh.getAssignments(startDatetime, endDatetime)
         return render_template("tdconsole.html", utdsf=utdsf, dio=dio, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=clearDate)
 

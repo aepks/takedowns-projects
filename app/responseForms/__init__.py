@@ -27,8 +27,11 @@ class Session:
         self.instacartOrder = self.gc.open_by_key("1uFJTv9IwJXfhzpSjqQSVLPB0SX3PqYqD2q1-dMJd0lU").worksheet('do')
 
     def getDefaultInstacartOrder(self):
-        return self.instacartOrder.get_all_values()[1:]
-
+        try:
+            return self.instacartOrder.get_all_values()[1:]
+        except:
+            self.__init__()
+            return self.getDefaultInstacartOrder()
     def getResponses(self):
         try:
             responses = self.responseSheet.get_all_values()[1:]
