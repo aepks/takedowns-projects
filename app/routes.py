@@ -58,7 +58,7 @@ def tdconsole():
             endDate, "%m/%d/%Y") + datetime.timedelta(days=1)
         data = algoSesh.getAssignments(startDatetime, endDatetime)
         resp = make_response(render_template(
-            "tdconsole.html", utdsf=utdsf, dio=dio, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=clearDate))
+            "tdconsole.html", utdsf=utdsf, dio=dio, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=solveDates))
         resp.set_cookie("startDate", startDate)
         resp.set_cookie("endDate", endDate)
         return resp
@@ -73,13 +73,13 @@ def tdconsole():
         endDatetime = datetime.datetime.strptime(
             endDate, "%m/%d/%Y") + datetime.timedelta(days=1)
         data = algoSesh.getAssignments(startDatetime, endDatetime)
-        return render_template("tdconsole.html", utdsf=utdsf, dio=dio, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=clearDate)
+        return render_template("tdconsole.html", utdsf=utdsf, dio=dio, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=solveDates)
 
     else:
         startDatetime = datetime.datetime.now() - datetime.timedelta(days=(datetime.datetime.now().weekday() + 7))
         endDatetime = startDatetime + datetime.timedelta(days=40)
         data = algoSesh.getAssignments(startDatetime, endDatetime)
-        return render_template("tdconsole.html", utdsf=utdsf, dio=dio, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=clearDate)
+        return render_template("tdconsole.html", utdsf=utdsf, dio=dio, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=solveDates)
 
 
 @app.route("/tdstats", methods=['POST', 'GET'])
