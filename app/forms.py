@@ -51,10 +51,15 @@ class UpdateTakedownsSheet(FlaskForm):
 
 class SaveInstacartOrderSheet(FlaskForm):
     instacartSession = instacart.Session()
-    choices = instacartSession.getInstacartCarts().append(("add_new", "Add New"))
+    responseFormsSession = responseForms.Session()
 
-    choice = SelectField("Cart Option", choices=choices, validators=[DataRequired()])
-    title = StringField("New Sheet Title")
+    carts = instacartSession.getInstacartCarts()
+    existingOrders = responseFormsSession.getInstacartOrders()
+
+    password = PasswordField("What's the password?")
+    cartChoice = SelectField("Cart Option", choices=carts, validators=[DataRequired()])
+    orderChoice = SelectField("Order Choice", choices=existingOrders, validators=[DataRequired()])
+
     submit = SubmitField()
 
 class DefaultInstacartOrderForm(FlaskForm):

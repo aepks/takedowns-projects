@@ -53,6 +53,12 @@
       {{ wtf.quick_form(dio) }}
     </div>
     {% endif %}
+    {% if row == dataRows[5] %}
+    <div class="col-md-2">
+      <h3>Change Instacart Order</h3>
+      {{ wtf.quick_form(ordersheet) }}
+    </div>
+    {% endif %}
   </div>
   {% endfor %}
 </div>

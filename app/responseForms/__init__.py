@@ -33,21 +33,31 @@ class Session:
         return self.instacartOrderWorksheet.worksheet(sheet).get_all_values()[1:]
 
     def setInstacartOrder(self, sheet, items):
-        if sheet not in self.instacartOrderWorksheet.worksheets():
+        try:
             self.instacartOrderWorksheet.add_worksheet(sheet, 250, 4)
+        except Exception:
+            pass
 
         sheet = self.instacartOrderWorksheet.worksheet(sheet)
-        cells = sheet.range(f"A2:C100")
+        cells = sheet.range(f"A2:E100")
         i = 0
         j = 0
+        for item in items:
+            print(item)
+
+        print(len(items))
         for cell in cells:
             if i < len(items):
-                if j == 3:
-                    j = 0
-                cell.value = [i][j]
+                print(i,j, items[i])
+                cell.value = items[i][j]
                 j += 1
+                if j == 5:
+                    j = 0
+                    i += 1
             else:
-                cell.value = None
+                cell.value = ""
+
+        sheet.update_cells(cells)
         return
 
     def getResponses(self):

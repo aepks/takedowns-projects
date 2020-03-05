@@ -1,8 +1,9 @@
 import requests
 
-from creds import creds
+from app.instacart.creds import creds
 
-# from app.instacart.creds import creds
+# from creds import creds
+
 
 
 class Session:
@@ -45,13 +46,13 @@ class Session:
         return addItemRequest.text
 
     def getInstacartCarts(self):
-        r = requests.get(self.carts, cookies=self.cookies, headers=self.headers)
+        r = requests.get(self.carts, cookies=self.cookies,
+                         headers=self.headers)
         carts = []
         for cart in r.json()["carts"]["owned"]:
             carts.append((cart["id"], cart["description"]))
         for cart in r.json()["carts"]["shared"]:
             carts.append((cart["id"], cart["description"]))
-        print(carts)
         return carts
 
     def getCartContents(self, cartID):
@@ -60,11 +61,18 @@ class Session:
         items = []  # Tuples: (item_id, item_name, qty)
         for item in r.json()["container"]["modules"]:
             if "cart_item" in item["id"]:
-                items.append((item["data"]["item"]["id"], item["data"]["qty"], item["data"]["item"]["name"]))
+                items.append(
+                    (item["data"]["item"]["id"],
+                    item["data"]["qty"],
+                    item["data"]["item"]["name"],
+                    float(item["data"]["item"]["pricing"]
+                          ["price"].replace("$", "")),
+                    float(item["data"]["pricing"]["price"].replace("$", ""))
+                ))
         return items
 
 if __name__ == "__main__":
-    s = Session()
-    carts = s.getInstacartCarts()
+    s=Session()
+    carts=s.getInstacartCarts()
     for cart in carts:
         s.getCartContents(cart[0])
