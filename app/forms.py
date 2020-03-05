@@ -13,7 +13,7 @@ class DateInput(FlaskForm):
     submit = SubmitField("Submit Request")
 
 
-class ClearDate(FlaskForm):
+class SolveDateForm(FlaskForm):
     resetDate = StringField(
         "Start Date (MM/DD)", validators=[DataRequired(), Regexp(r"^[0-9]{2}/[0-9]{2}$")])
     endResetDate = StringField(
