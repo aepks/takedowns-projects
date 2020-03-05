@@ -24,10 +24,31 @@ class Session:
         self.penaltiesWks = self.gc.open_by_key(
             "1VPOrmIxbn3PzY71UJXErlM9YZZM54g9vIylKOIqEKLQ")
         self.penaltiesSheet = self.penaltiesWks.worksheet("Penalties")
-        self.instacartOrder = self.gc.open_by_key("1uFJTv9IwJXfhzpSjqQSVLPB0SX3PqYqD2q1-dMJd0lU").worksheet('do')
+        self.instacartOrderWorksheet = self.gc.open_by_key("1uFJTv9IwJXfhzpSjqQSVLPB0SX3PqYqD2q1-dMJd0lU")
 
-    def getDefaultInstacartOrder(self):
-        return self.instacartOrder.get_all_values()[1:]
+    def getInstacartOrders(self):
+        return self.instacartOrderWorksheet.worksheet("index").get_all_values()[1:]
+
+    def getInstacartOrder(self, sheet):
+        return self.instacartOrderWorksheet.worksheet(sheet).get_all_values()[1:]
+
+    def setInstacartOrder(self, sheet, items):
+        if sheet not in self.instacartOrderWorksheet.worksheets():
+            self.instacartOrderWorksheet.add_worksheet(sheet, 250, 4)
+
+        sheet = self.instacartOrderWorksheet.worksheet(sheet)
+        cells = sheet.range(f"A2:C100")
+        i = 0
+        j = 0
+        for cell in cells:
+            if i < len(items):
+                if j == 3:
+                    j = 0
+                cell.value = [i][j]
+                j += 1
+            else:
+                cell.value = None
+        return
 
     def getResponses(self):
         try:

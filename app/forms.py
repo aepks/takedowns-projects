@@ -2,7 +2,8 @@ from flask_wtf import FlaskForm
 from wtforms import SubmitField, StringField, DecimalField, SelectField, PasswordField
 from wtforms.validators import DataRequired, Regexp, ValidationError
 import app.db as db
-
+import app.responseForms as responseForms
+import app.instacart as instacart
 
 class DateInput(FlaskForm):
     startDate = StringField(
@@ -48,6 +49,16 @@ class UpdateTakedownsSheet(FlaskForm):
     password = PasswordField("What's the password?")
     submit = SubmitField("Update Takedowns Sheet")
 
+class SaveInstacartOrderSheet(FlaskForm):
+    instacartSession = instacart.Session()
+    choices = instacartSession.getInstacartCarts().append(("add_new", "Add New"))
+
+    choice = SelectField("Cart Option", choices=choices, validators=[DataRequired()])
+    title = StringField("New Sheet Title")
+    submit = SubmitField()
+
 class DefaultInstacartOrderForm(FlaskForm):
+    responseFormsSession = responseForms.Session()
     password = PasswordField("What's the password?")
+    order = SelectField("Order List", choices=responseFormsSession.getInstacartOrders(), validators=[DataRequired()])
     submit = SubmitField("Add Default Items")

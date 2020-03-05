@@ -27,7 +27,8 @@ def tdconsole():
     message = None
     if dio.password.data and dio.password.data == "hunter2" and dio.validate_on_submit():
         instacartSession = instacart.Session()
-        for row in responseFormsSession.getDefaultInstacartOrder():
+        print(responseFormsSession.getInstacartOrder(dio.sheet.data))
+        for row in responseFormsSession.getInstacartOrder(dio.sheet.data):
             instacartSession.addItem(row[0], row[2])
 
     if gbpf.submit.data and gbpf.validate_on_submit():
