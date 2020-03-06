@@ -34,6 +34,7 @@ class Session:
 
     def setInstacartOrder(self, sheet, items):
         try:
+<<<<<<< Updated upstream
             self.instacartOrderWorksheet.add_worksheet(sheet, 250, 4)
         except Exception:
             pass
@@ -60,6 +61,12 @@ class Session:
         sheet.update_cells(cells)
         return
 
+=======
+            return self.instacartOrder.get_all_values()[1:]
+        except Exception:
+            self.__init__()
+            return self.getDefaultInstacartOrder()
+>>>>>>> Stashed changes
     def getResponses(self):
         try:
             responses = self.responseSheet.get_all_values()[1:]
