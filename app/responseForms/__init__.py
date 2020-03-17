@@ -27,10 +27,18 @@ class Session:
         self.instacartOrderWorksheet = self.gc.open_by_key("1uFJTv9IwJXfhzpSjqQSVLPB0SX3PqYqD2q1-dMJd0lU")
 
     def getInstacartOrders(self):
-        return self.instacartOrderWorksheet.worksheet("index").get_all_values()[1:]
+        try:
+            return self.instacartOrderWorksheet.worksheet("index").get_all_values()[1:]
+        except Exception:
+            self.__init__()
+            return self.getInstacartOrders()
 
     def getInstacartOrder(self, sheet):
-        return self.instacartOrderWorksheet.worksheet(sheet).get_all_values()[1:]
+        try:
+            return self.instacartOrderWorksheet.worksheet(sheet).get_all_values()[1:]
+        except Exception:
+            self.__init__()
+            return self.getInstacartOrder(sheet)
 
     def setInstacartOrder(self, sheet, items):
         try:

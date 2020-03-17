@@ -97,7 +97,7 @@ class Session:
             dateId, tid = date
             assignmentUids = self.dbSession.getAssignments(dateId)
             assignments = [self.dbSession.getPname(
-                uid) for uid in assignmentUids]
+                uid).strip() for uid in assignmentUids]
             self.responseForms.updateTakedownsForm(tid, assignments)
 
     def solveDates(self, startDate=None, endDate=None):
@@ -137,7 +137,7 @@ class Session:
                 for user in sortedUserTDDates:
                     if len(chosenUsers) == 3:
                         break
-                    if (date[0] - user[1]) < 16:
+                    if (date[0] - user[1]) < 10:
                         print("Less than 3 days since last takedown", user)
                         availUsers.remove(user[0])
                         continue

@@ -28,9 +28,11 @@ def tdconsole():
         responseFormsSession.setInstacartOrder(order, instacartSession.getCartContents(cart))
     message = None
     if dio.password.data and dio.password.data == "hunter2" and dio.validate_on_submit():
-        print(responseFormsSession.getInstacartOrder(dio.order.data))
-        for row in responseFormsSession.getInstacartOrder(dio.order.data):
-            instacartSession.addItem(row[0], row[2])
+        order = responseFormsSession.getInstacartOrder(dio.order.data)
+        print(order)
+        for row in order:
+            print("Adding item. ", row[0], " ", row[2])
+            instacartSession.addItem(row[0], row[1])
 
     if gbpf.submit.data and gbpf.validate_on_submit():
         email = gbpf.email.data
