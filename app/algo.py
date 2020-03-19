@@ -1,7 +1,6 @@
 import app.db as db
 import app.mail as mail
 import app.responseForms as responseForms
-from random import shuffle
 import datetime
 import math
 from dateutil.parser import parse
@@ -42,9 +41,9 @@ class Session:
             date = self.dbSession.getDate(spdtif)
 
             if not date:
-                print(date)
-                print("Fuckaroo, bud")
-                print(spdtif)
+                # print(date)
+                # print("Fuckaroo, bud")
+                # print(spdtif)
                 return False
 
             if meal == "Lunch":
@@ -114,7 +113,7 @@ class Session:
             newMemberChosen = False
             while availUsers and len(chosenUsers) < 3:
                 tdScoreUsers = []
-                print(availUsers)
+                # print(availUsers)
                 userScores = [(uid, self.dbSession.getScore(uid)) for uid in availUsers]
                 minScore = userScores[0][1]
                 for user in userScores:
@@ -124,15 +123,14 @@ class Session:
                 for user in userScores:
                     if user[1] == minScore:
                         tdScoreUsers.append(user)
-                    else:
-                        print("User ", user[0], " not added.")
+                        # print("User ", user[0], " not added.")
 
                 # Now, availUsers contains a list of all users with lowest score.
                 availUserTDDate = [(user[0], self.dbSession.getMostRecentTakedown(user[0], date[0])) for user in tdScoreUsers]
                 sortedUserTDDates = sorted(
                     availUserTDDate, key = lambda x: x[0])
 
-                print(sortedUserTDDates)
+                # print(sortedUserTDDates)
 
                 for user in sortedUserTDDates:
                     if len(chosenUsers) == 3:
@@ -201,7 +199,6 @@ class Session:
         uid = self.dbSession.getUid(email)
         points = float(points * -1)
         self.dbSession.applyPenalty(dt, uid, points, description)
-
 
 if __name__ == "__main__":
     s = Session()

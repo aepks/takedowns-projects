@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, StringField, DecimalField, SelectField, PasswordField
+from wtforms import SubmitField, StringField, DecimalField, SelectField, PasswordField, IntegerField
 from wtforms.validators import DataRequired, Regexp, ValidationError
 import app.db as db
 import app.responseForms as responseForms
@@ -33,17 +33,18 @@ class GoodBoyPointForm(FlaskForm):
     submit = SubmitField("Submit Request")
 
 
-class emailInput(FlaskForm):
-    def checkEmail(form, field):
-        dbSession = db.Session()
-        if dbSession.testEmail(field.data):
-            return True
-        else:
-            raise ValidationError("Email entered is not valid.")
+class UserLoginForm(FlaskForm):
+    dbSession = db.Session()
+    users = dbSession.getUsers()
+    email = SelectField("User", choices=users, validators=[DataRequired()])
+    submit = SubmitField("See User Info")
 
-    email = StringField("Email Address", validators=[
-                        DataRequired(), checkEmail])
-    submit = SubmitField("Submit Request")
+class TakedownTradeForm(FlaskForm):
+    dbSession = db.Session()
+    users = dbSession.getUsers()
+    email = SelectField("User", choices=users, validators=[DataRequired()])
+    dateId = IntegerField("Meal ID", validators=[DataRequired()])
+    submitData = SubmitField("Submit Trade Request")
 
 class UpdateTakedownsSheet(FlaskForm):
     password = PasswordField("What's the password?")

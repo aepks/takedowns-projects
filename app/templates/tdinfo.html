@@ -6,21 +6,30 @@
   <h1>Takedown Statistics:</h1>
   <div class="row">
     <div class="col-md-3">
-      <h3>Overall statistics</h3>
-      <ul>
-        <li><strong>Average number of takedowns: </strong>{{ avgTakedowns }}</li>
-        <li><strong>Average penalty score: </strong>{{ avgPenalty }}</li>
-      </ul>
+      <h3>Request Takedown Trade</h3>
+      {{ wtf.quick_form(takedownTradeForm) }}
     </div>
     <div class="col-md-6">
       <h3>User Information</h3>
-      {{ wtf.quick_form(emailInput) }}
+      {{ wtf.quick_form(userLoginForm) }}
       <br>
       {% if user[0] %}
       <ul>
         <li><strong>Preferred name: </strong>{{ user[0] }}</li>
         <li><strong>Number of takedowns: </strong>{{ user[1] }}</li>
         <li><strong>Number of penalties: </strong>{{ user[2] }}</li>
+      </ul>
+      <h5>Takedown Details</h5>
+      <ul>
+        {% for takedown in user[4] %}
+        <li>
+          <ul>
+            <li><strong>Date: </strong>{{ takedown[1] }}</li>
+            <li><strong>Meal: </strong>{{ takedown[0] }}</li>
+            <li><strong>Date ID: </strong>{{ takedown[2] }}</li>
+          </ul>
+        </li>
+        {% endfor %}
       </ul>
       <h5>Penalty Details</h5>
       <p><i>Note: Positive numbers are penalties, negative numbers are credits</i></p>

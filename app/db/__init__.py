@@ -1,5 +1,7 @@
 import sqlite3
 import datetime
+from base64 import b64encode
+import os
 
 class Session:
     def createCursor(self):
@@ -95,6 +97,10 @@ class Session:
         c = self.createCursor()
         return [x[0] for x in c.execute("SELECT uid FROM avalibility WHERE tid = ?", (tid,)).fetchall()]
 
+    def getUserAvailibility(self, uid):
+        c = self.createCursor()
+        return [x[0] for x in c.execute("SELECT tid FROM avalibility WHERE uid = ?", (uid,)).fetchall()]
+
     def getScore(self, uid):
         c = self.createCursor()
         tdScore, penaltyScore = 0, 0
@@ -124,8 +130,9 @@ class Session:
     def getTakedownScore(self, uid):
         c = self.createCursor()
         c.execute("SELECT tdScore from tdScores WHERE uid = ?", (uid,))
-        if c:
-            ret = c.fetchone()[0]
+        ret = c.fetchone()
+        if ret:
+            ret = ret[0]
             c.close()
             return ret
         return 0
@@ -185,6 +192,18 @@ class Session:
         else:
             return False
 
+    def getTid(self, dateId):
+        c = self.createCursor()
+        c.execute("SELECT tid FROM schedule WHERE dateId = ?", (dateId,))
+        ret = c.fetchone()
+        if ret:
+            ret = ret[0]
+            c.close()
+            return ret
+        else:
+            c.close()
+            return False
+
     def getIsoDate(self, dateId):
         c = self.createCursor()
         c.execute("SELECT date FROM schedule WHERE dateId = ?", (dateId,))
@@ -213,6 +232,27 @@ class Session:
         c.close()
         return True
 
+    def swapAssignment(self, uid, tradeUid, dateId):
+        c = self.createCursor()
+        c.execute("UPDATE assignments SET uid = ? WHERE dateId = ? AND uid = ?", (tradeUid, dateId, uid))
+        self.commit()
+        c.close()
+
+    def getSwapKey(self):
+        token = b64encode(os.urandom(10)).decode('utf-8')
+        c = self.createCursor()
+        c.execute("INSERT INTO swapTokens VALUES (?)", (token,))
+        self.commit()
+        c.close()
+        return token
+
+    def voidSwapKey(self, token):
+        c = self.createCursor()
+        c.execute("DELETE FROM swapTokens WHERE token = ?", (token,))
+        rowcount = bool(c.rowcount)
+        self.commit()
+        return rowcount
+
     def getAssignments(self, dateId):
         c = self.createCursor()
         try:
@@ -229,6 +269,18 @@ class Session:
         except Exception:  # If there's no rows returned
             c.close()
             return None
+
+    def getUserAssignments(self, uid):
+        c = self.createCursor()
+        ret = c.execute("SELECT * FROM assignments WHERE uid = ?", (uid,))
+        users = []
+        for user in ret:
+            users.append(user)
+        c.close()
+        if users:
+            return users
+        else:
+            return []
 
     def assignUser(self, dateId, uid):
         c = self.createCursor()
@@ -256,6 +308,20 @@ class Session:
         ret = [vals for vals in c]
         c.close()
         return ret
+
+    def getCurMealDateId(self):
+        c = self.createCursor()
+        now = datetime.datetime.now()
+        hours = now.hour
+        if hours < 13.5:
+            now = now - datetime.timedelta(hours=13.5)
+        elif hours < (18.5):
+            now = now - datetime.timedelta(hours=18.5)
+        c.execute("SELECT MIN(dateId) FROM schedule WHERE date > ?", (now,))
+        ret = c.fetchone()
+        if ret:
+            return ret[0]
+        return 0
 
     def close(self):
         conn.commit()

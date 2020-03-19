@@ -10,6 +10,7 @@ __pycache__/
 *.so
 app/mail/keyfile.json
 app/instacart/creds.py
+app/db/takedowns.db
 
 # Distribution / packaging
 .Python

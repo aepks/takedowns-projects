@@ -1,10 +1,11 @@
 from app import app
 from flask import request, render_template, make_response, redirect, url_for
-from app.forms import DateInput, UpdateTakedownsSheet, SolveDateForm, GoodBoyPointForm, emailInput, DefaultInstacartOrderForm, SaveInstacartOrderSheet
+from app.forms import DateInput, UpdateTakedownsSheet, SolveDateForm, GoodBoyPointForm, DefaultInstacartOrderForm, SaveInstacartOrderSheet, UserLoginForm, TakedownTradeForm
 import app.algo as algo
 import app.db as db
 import app.responseForms as responseForms
 import app.instacart as instacart
+import app.mail as mail
 import datetime
 
 algoSesh = algo.Session()
@@ -88,35 +89,70 @@ def tdconsole():
         data = algoSesh.getAssignments(startDatetime, endDatetime)
         return render_template("tdconsole.html", utdsf=utdsf, ordersheet=ordersheet, dio=dio, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=solveDates)
 
+@app.route("/tdtrade", methods=['GET'])
+def tdtrade():
+    mode = request.args.get('mode')
+    token = request.args.get('token')
+    uid = request.args.get('uid')
+    mealDateId = request.args.get('mealDateId')
+    tradeUid = request.args.get('tradeUid')
+    if dbSession.voidSwapKey(token):
+        if mode == "trade":
+            tradeDateId = request.args.get('trade')
+            dbSession.swapAssignment(uid, tradeUid, mealDateId)
+            dbSession.swapAssignment(tradeUid, uid, tradeDateId)
+        if mode == "purchase":
+            dbSession.swapAssignment(uid, tradeUid, mealDateId)
 
-@app.route("/tdstats", methods=['POST', 'GET'])
-def tdstats():
-    avgTakedowns = dbSession.getAverageTdScore()
-    avgPenalty = dbSession.getAveragePenaltyScore()
-    emailInputForm = emailInput()
+    return redirect(url_for('.tdinfo'))
 
-    if emailInputForm.validate_on_submit():
-        userEmail = emailInputForm.email.data
-        uid = dbSession.getUid(userEmail)
-        pname = dbSession.getPname(uid)
-        tdScore = dbSession.getTakedownScore(uid)
-        penaltyScore = dbSession.getPenaltyBalance(uid)
-        userPenalties = dbSession.getPenalties(uid)
-        user = [pname, tdScore, penaltyScore, userPenalties]
+@app.route("/tdinfo", methods=['POST', 'GET'])
+def tdinfo():
+    userLoginForm = UserLoginForm()
+    takedownTradeForm = TakedownTradeForm()
+    def tdPage(userEmail):
+        if userEmail is None:
+            user = [None]
+        else:
+            uid = dbSession.getUid(userEmail)
+            pname = dbSession.getPname(uid)
+            tdScore = dbSession.getTakedownScore(uid)
+            penaltyScore = dbSession.getPenaltyBalance(uid)
+            userPenalties = dbSession.getPenalties(uid)
+            userAssignments = dbSession.getUserAssignments(uid)
+            assignments = []
+            if userAssignments:
+                for dateId in userAssignments:
+                    tid = dbSession.getTid(dateId[0])
+                    date = dbSession.getIsoDate(dateId[0])
+                    meal = ["Lunch", "Dinner"][tid % 2]
+                    day = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"][int((tid - tid % 2)/2)]
+                    assignments.append([day + " " + meal, date, dateId[0]])
+
+            user = [pname, tdScore, penaltyScore, userPenalties, assignments]
+
         resp = make_response(render_template(
-        "tdstats.html", user=user, emailInput=emailInputForm, avgTakedowns=avgTakedowns, avgPenalty=avgPenalty))
-        resp.set_cookie("userEmail", userEmail)
+            "tdinfo.html", user=user, userLoginForm=userLoginForm, takedownTradeForm=takedownTradeForm))
+
+        if userEmail:
+            resp.set_cookie("userEmail", userEmail)
         return resp
+
+    if userLoginForm.submit.data and userLoginForm.validate_on_submit():
+        userEmail = userLoginForm.email.data
+        return tdPage(userEmail)
+
+    if takedownTradeForm.submitData.data and takedownTradeForm.validate_on_submit():
+        userEmail = takedownTradeForm.email.data
+        uid = dbSession.getUid(userEmail)
+        dateId = takedownTradeForm.dateId.data
+        tid = dbSession.getTid(dateId)
+        traders = dbSession.getAvailibility(tid)
+        mail.TakedownTradeMessage(uid, dateId, traders)
+        return tdPage(userEmail)
 
     try:
         userEmail = request.cookies.get("userEmail")
-        uid = dbSession.getUid(userEmail)
-        pname = dbSession.getPname(uid)
-        tdScore = dbSession.getTakedownScore(uid)
-        penaltyScore = dbSession.getTakedownScore(uid)
-        userPenalties = dbSession.getPenalties(uid)
-        user = [pname, tdScore, penaltyScore, userPenalties]
-    except Exception:  # Likely if user email doesn't exist
-        user = [None]
-
-    return render_template("tdstats.html", user=user, emailInput=emailInputForm, avgTakedowns=avgTakedowns, avgPenalty=avgPenalty)
+        return tdPage(userEmail)
+    except Exception:
+        return tdPage(None)

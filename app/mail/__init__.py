@@ -6,6 +6,10 @@ import base64
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from apiclient import errors, discovery
+from dateutil.parser import parse
+import requests
+import app.db as db
+from datetime import datetime
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.send','https://www.googleapis.com/auth/gmail.settings.basic']
 CLIENT_SECRET_FILE = './app/mail/keyfile.json'
@@ -36,7 +40,7 @@ def SendMessage(to, subject, msgHtml, msgPlain):
     msgPlain -- str
     """
     # [DEBUG]
-    # to = "jschmitz2@hawk.iit.edu"
+    to = "jschmitz2@hawk.iit.edu"
     sender = "jschmitz2@hawk.iit.edu"
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
@@ -65,6 +69,76 @@ def CreateMessage(sender, to, subject, msgHtml, msgPlain):
     raw = raw.decode()
     body = {'raw': raw}
     return body
+
+
+def TakedownTradeMessage(uid, dateId, traders):
+    debug = 1
+    url = ['104.194.115.143', 'localhost'][debug]
+    dbSession = db.Session()
+    curMeal = dbSession.getCurMealDateId()
+    token = dbSession.getSwapKey()
+    uname = dbSession.getPname(uid)
+    tid = dbSession.getTid(dateId)
+    date = parse(dbSession.getIsoDate(dateId))
+    meal = ["Lunch", "Dinner"][tid % 2]
+    weekday = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"][date.weekday()]
+    subject = f"Trade Requested - {weekday} {meal} for {uname}"
+    for trader in traders:
+        print("Trader: ", trader)
+        traderName = dbSession.getPname(trader)
+        traderMeals = dbSession.getUserAssignments(trader)
+        tradeLinks = "<ul>"
+        for meal in traderMeals:
+            print("Trader meal: ", meal)
+            print(meal[0], " ", curMeal)
+            if meal[0] < curMeal:
+                continue
+            tradeMealTid = dbSession.getTid(meal[0])
+            tradeMealDateTime = dbSession.getIsoDate(meal[0])
+            purchaseUrl = ""
+            meal = ["Lunch", "Dinner"][tradeMealTid % 2]
+            day = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"][int((tradeMealTid - tradeMealTid % 2)/2)]
+
+            if tradeMealTid in dbSession.getUserAvailibility(uid):
+                print("103")
+                payload = {
+                    "mode": "trade",
+                    "uid": uid,
+                    "mealDateId": dateId,
+                    "tradeDateId": meal[0],
+                    "tradeUid": trader,
+                    "token": token
+                }
+                r = requests.get('http://104.194.115.143:5000/tdtrade', params=payload)
+                tradeLinks += f"<li><strong>{day} {meal}, {tradeMealDateTime[:10]}:</strong> {r.url}"
+
+        tradeLinks += "</ul>"
+        payload = {
+            "mode": "purchase",
+            "uid": uid,
+            "mealDateId": dateId,
+            "tradeUid": trader,
+            "token": token
+        }
+        r = requests.get('http://104.194.115.143:5000/tdtrade', params=payload)
+        purchaseUrl = r.url
+        message = f"""
+        <h3>{traderName},<h3>
+
+        <p>{uname} is looking to trade their {weekday} {meal} takedown.</p>
+        <br>
+        <p>Please click a link below to trade for that takedown.</p>"""
+        message += "<h5>Tradeable Takedowns:</h5>"
+        message += tradeLinks
+        message += "<h5>Alternatively, you can take the takedown and recieve a credit.<h5>"
+        message += f"{purchaseUrl}"
+        message += "<p><br>With a cold, mechanical heart,<br><i>The Takedowns Automation Project</i></p>"
+
+        rEmail = dbSession.getEmail(trader)
+        SendMessage(rEmail, subject, message, message)
+
+
+
 
 def main():
     to = "jschmitz2@hawk.iit.edu"
