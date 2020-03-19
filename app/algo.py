@@ -135,8 +135,8 @@ class Session:
                 for user in sortedUserTDDates:
                     if len(chosenUsers) == 3:
                         break
-                    if (date[0] - user[1]) < 10:
-                        print("Less than 3 days since last takedown", user)
+                    if (date[0] - user[1]) < 4:
+                        print("Less than 2 days since last takedown", user)
                         availUsers.remove(user[0])
                         continue
                     if self.dbSession.isNewMember(user[0]) and newMemberChosen:

@@ -83,6 +83,7 @@ def TakedownTradeMessage(uid, dateId, traders):
     meal = ["Lunch", "Dinner"][tid % 2]
     weekday = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"][date.weekday()]
     subject = f"Trade Requested - {weekday} {meal} for {uname}"
+    _meal = meal
     for trader in traders:
         traderName = dbSession.getPname(trader)
         traderMeals = dbSession.getUserAssignments(trader)
@@ -93,7 +94,7 @@ def TakedownTradeMessage(uid, dateId, traders):
             tradeMealTid = dbSession.getTid(meal[0])
             tradeMealDateTime = dbSession.getIsoDate(meal[0])
             purchaseUrl = ""
-            meal = ["Lunch", "Dinner"][tradeMealTid % 2]
+            mealtime = ["Lunch", "Dinner"][tradeMealTid % 2]
             day = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"][int((tradeMealTid - tradeMealTid % 2)/2)]
 
             if tradeMealTid in dbSession.getUserAvailibility(uid):
@@ -105,10 +106,8 @@ def TakedownTradeMessage(uid, dateId, traders):
                     "tradeUid": trader,
                     "token": token
                 }
-                print("L108")
-                r = requests.get('http://104.194.115.143:5000/tdtrade', params=payload)
-                print("L110")
-                tradeLinks += f"<li><strong>{day} {meal}, {tradeMealDateTime[:10]}:</strong> {r.url}"
+                r = requests.Request('GET', 'http://104.194.115.143:5000/tdtrade', params=payload).prepare()
+                tradeLinks += f"<li><strong>{day} {mealtime}, {tradeMealDateTime[:10]}:</strong> {r.url}"
 
         tradeLinks += "</ul>"
         payload = {
@@ -118,14 +117,13 @@ def TakedownTradeMessage(uid, dateId, traders):
             "tradeUid": trader,
             "token": token
         }
-        print("L120")
-        r = requests.get('http://104.194.115.143:5000/tdtrade', params=payload)
-        print("L123")
+        r = requests.Request('GET', 'http://104.194.115.143:5000/tdtrade', params=payload).prepare()
         purchaseUrl = r.url
+        mealDateTime = dbSession.getIsoDate(dateId)
         message = f"""
         <h3>{traderName},<h3>
 
-        <p>{uname} is looking to trade their {weekday} {meal} takedown.</p>
+        <p>{uname} is looking to trade their {weekday} {_meal} takedown, on {mealDateTime[:10]}.</p>
         <br>
         <p>Please click a link below to trade for that takedown.</p>"""
         message += "<h5>Tradeable Takedowns:</h5>"
