@@ -105,7 +105,9 @@ def TakedownTradeMessage(uid, dateId, traders):
                     "tradeUid": trader,
                     "token": token
                 }
+                print("L108")
                 r = requests.get('http://104.194.115.143:5000/tdtrade', params=payload)
+                print("L110")
                 tradeLinks += f"<li><strong>{day} {meal}, {tradeMealDateTime[:10]}:</strong> {r.url}"
 
         tradeLinks += "</ul>"
@@ -116,7 +118,9 @@ def TakedownTradeMessage(uid, dateId, traders):
             "tradeUid": trader,
             "token": token
         }
+        print("L120")
         r = requests.get('http://104.194.115.143:5000/tdtrade', params=payload)
+        print("L123")
         purchaseUrl = r.url
         message = f"""
         <h3>{traderName},<h3>
