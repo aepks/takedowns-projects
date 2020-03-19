@@ -84,13 +84,10 @@ def TakedownTradeMessage(uid, dateId, traders):
     weekday = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"][date.weekday()]
     subject = f"Trade Requested - {weekday} {meal} for {uname}"
     for trader in traders:
-        print("Trader: ", trader)
         traderName = dbSession.getPname(trader)
         traderMeals = dbSession.getUserAssignments(trader)
         tradeLinks = "<ul>"
         for meal in traderMeals:
-            print("Trader meal: ", meal)
-            print(meal[0], " ", curMeal)
             if meal[0] < curMeal:
                 continue
             tradeMealTid = dbSession.getTid(meal[0])
@@ -100,7 +97,6 @@ def TakedownTradeMessage(uid, dateId, traders):
             day = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"][int((tradeMealTid - tradeMealTid % 2)/2)]
 
             if tradeMealTid in dbSession.getUserAvailibility(uid):
-                print("103")
                 payload = {
                     "mode": "trade",
                     "uid": uid,
