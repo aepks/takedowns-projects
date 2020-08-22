@@ -4,8 +4,6 @@ from app.instacart.creds import creds
 
 # from creds import creds
 
-
-
 class Session:
     def __init__(self):
         self.loginHeaders = {

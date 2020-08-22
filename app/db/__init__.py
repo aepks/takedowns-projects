@@ -410,20 +410,22 @@ if __name__ == "__main__":
             i += 1
 
     nonDays = [
-        (20, 1, 2020),
-        (16, 3, 2020),
-        (17, 3, 2020),
-        (18, 3, 2020),
-        (19, 3, 2020),
-        (20, 3, 2020)
+        (7, 9, 2020),
+        (12, 10, 2020),
+        (25, 11, 2020),
+        (26, 11, 2020),
+        (27, 11, 2020),
+        (28, 11, 2020),
+        (29, 11, 2020)
     ]
+    
     forbiddenDays = []
     for day in nonDays:
         forbiddenDays.append(datetime.datetime(day=day[0], month=day[1], year=day[2]))
 
-    start = datetime.datetime(day=13, month=1, year=2020)
+    start = datetime.datetime(day=24, month=8, year=2020)
     date = start
-    end = datetime.datetime(day=9, month=5, year=2020)
+    end = datetime.datetime(day=12, month=12, year=2020)
 
     days = [0, 2, 4, 6, 8]
 
