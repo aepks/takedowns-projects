@@ -11,7 +11,7 @@ import datetime
 algoSesh = algo.Session()
 dbSession = db.Session()
 responseFormsSession = responseForms.Session()
-instacartSession = instacart.Session()
+# instacartSession = instacart.Session()
 
 @app.route("/", methods=['POST', 'GET'])
 @app.route("/tdconsole", methods=['POST', 'GET'])
@@ -23,17 +23,17 @@ def tdconsole():
     dio = DefaultInstacartOrderForm()
     ordersheet = SaveInstacartOrderSheet()
 
-    if ordersheet.password.data and ordersheet.password.data == "hunter2" and ordersheet.cartChoice.data and ordersheet.validate_on_submit():
-        cart = ordersheet.cartChoice.data
-        order = ordersheet.orderChoice.data
-        responseFormsSession.setInstacartOrder(order, instacartSession.getCartContents(cart))
+    # if ordersheet.password.data and ordersheet.password.data == "hunter2" and ordersheet.cartChoice.data and ordersheet.validate_on_submit():
+    #     cart = ordersheet.cartChoice.data
+    #     order = ordersheet.orderChoice.data
+    #     responseFormsSession.setInstacartOrder(order, instacartSession.getCartContents(cart))
     message = None
-    if dio.password.data and dio.password.data == "hunter2" and dio.validate_on_submit():
-        order = responseFormsSession.getInstacartOrder(dio.order.data)
-        print(order)
-        for row in order:
-            print("Adding item. ", row[0], " ", row[2])
-            instacartSession.addItem(row[0], row[1])
+    # if dio.password.data and dio.password.data == "hunter2" and dio.validate_on_submit():
+    #     order = responseFormsSession.getInstacartOrder(dio.order.data)
+    #     print(order)
+    #     for row in order:
+    #         print("Adding item. ", row[0], " ", row[2])
+    #         instacartSession.addItem(row[0], row[1])
 
     if gbpf.submit.data and gbpf.validate_on_submit():
         email = gbpf.email.data

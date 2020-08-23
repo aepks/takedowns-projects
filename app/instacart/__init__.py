@@ -47,6 +47,7 @@ class Session:
         r = requests.get(self.carts, cookies=self.cookies,
                          headers=self.headers)
         carts = []
+        print(r.json())
         for cart in r.json()["carts"]["owned"]:
             carts.append((cart["id"], cart["description"]))
         for cart in r.json()["carts"]["shared"]:

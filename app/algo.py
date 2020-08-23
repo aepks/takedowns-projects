@@ -102,7 +102,7 @@ class Session:
     def solveDates(self, startDate=None, endDate=None):
         if not startDate or not endDate:
             startDate = datetime.datetime(day=1, month=2, year=200)  # DEBUG
-            endDate = datetime.datetime(day=5, month=7, year=2020)
+            endDate = datetime.datetime(day=5, month=7, year=20200)
         dates = self.dbSession.getDates(
             startDate.isoformat(), endDate.isoformat())
         for date in dates:
@@ -135,8 +135,8 @@ class Session:
                 for user in sortedUserTDDates:
                     if len(chosenUsers) == 3:
                         break
-                    if (date[0] - user[1]) < 4:
-                        print("Less than 2 days since last takedown", user)
+                    if (date[0] - user[1]) < 1:
+                        print("Fuck the rules, a takedown a day keeps the doctor away", user)
                         availUsers.remove(user[0])
                         continue
                     if self.dbSession.isNewMember(user[0]) and newMemberChosen:

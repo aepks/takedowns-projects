@@ -51,11 +51,14 @@ class UpdateTakedownsSheet(FlaskForm):
     submit = SubmitField("Update Takedowns Sheet")
 
 class SaveInstacartOrderSheet(FlaskForm):
-    instacartSession = instacart.Session()
-    responseFormsSession = responseForms.Session()
+    # instacartSession = instacart.Session()
+    # responseFormsSession = responseForms.Session()
 
-    carts = instacartSession.getInstacartCarts()
-    existingOrders = responseFormsSession.getInstacartOrders()
+    # carts = instacartSession.getInstacartCarts()
+    # existingOrders = responseFormsSession.getInstacartOrders()
+
+    carts = [("Instacart automation broken!", "Instacart automation broken!")]
+    existingOrders = carts
 
     password = PasswordField("What's the password?")
     cartChoice = SelectField("Cart Option", choices=carts, validators=[DataRequired()])
@@ -66,5 +69,6 @@ class SaveInstacartOrderSheet(FlaskForm):
 class DefaultInstacartOrderForm(FlaskForm):
     responseFormsSession = responseForms.Session()
     password = PasswordField("What's the password?")
-    order = SelectField("Order List", choices=responseFormsSession.getInstacartOrders(), validators=[DataRequired()])
+    order = SelectField("Order List", choices=[("Instacart automation broken!", "Instacart automation broken!")], validators=[DataRequired()])
+    # order = SelectField("Order List", choices=responseFormsSession.getInstacartOrders(), validators=[DataRequired()])
     submit = SubmitField("Add Default Items")
