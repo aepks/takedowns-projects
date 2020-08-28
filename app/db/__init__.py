@@ -423,7 +423,7 @@ if __name__ == "__main__":
     for day in nonDays:
         forbiddenDays.append(datetime.datetime(day=day[0], month=day[1], year=day[2]))
 
-    start = datetime.datetime(day=24, month=8, year=2020)
+    start = datetime.datetime(day=31, month=8, year=2020)
     date = start
     end = datetime.datetime(day=12, month=12, year=2020)
 

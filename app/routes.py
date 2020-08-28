@@ -8,10 +8,27 @@ import app.instacart as instacart
 import app.mail as mail
 import datetime
 
+from apscheduler.scheduler import Scheduler
+
+sched = Scheduler()
+sched.start()
+
+sched.add_cron_job(auto_run_scheduler, day_of_week='sat-sun', hour='0-18')
+
 algoSesh = algo.Session()
 dbSession = db.Session()
 responseFormsSession = responseForms.Session()
 # instacartSession = instacart.Session()
+
+# Scheduler job
+def auto_run_scheduler():
+    startDatetime = datetime.datetime.now()
+    endDatetime = startDatetime + datetime.timedelta(days=7)
+
+    algoSesh.clearDates(startDatetime, endDatetime)
+    algoSesh.solveDates(startDatetime, endDatetime)
+
+    algoSesh.updateTakedowns()
 
 @app.route("/", methods=['POST', 'GET'])
 @app.route("/tdconsole", methods=['POST', 'GET'])
