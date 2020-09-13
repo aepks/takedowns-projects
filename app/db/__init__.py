@@ -324,8 +324,8 @@ class Session:
         return 0
 
     def close(self):
-        conn.commit()
-        conn.close()
+        self.conn.commit()
+        self.conn.close()
 
 
 if __name__ == "__main__":
