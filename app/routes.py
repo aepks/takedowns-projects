@@ -8,27 +8,24 @@ import app.instacart as instacart
 import app.mail as mail
 import datetime
 
-from apscheduler.scheduler import Scheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 
-sched = Scheduler()
-sched.start()
-
-sched.add_cron_job(auto_run_scheduler, day_of_week='sat-sun', hour='0-18')
 
 algoSesh = algo.Session()
-dbSession = db.Session()
 responseFormsSession = responseForms.Session()
 # instacartSession = instacart.Session()
 
 # Scheduler job
 def auto_run_scheduler():
+    autoRunAlgoSesh = algo.Session()
     startDatetime = datetime.datetime.now()
     endDatetime = startDatetime + datetime.timedelta(days=7)
 
-    algoSesh.clearDates(startDatetime, endDatetime)
-    algoSesh.solveDates(startDatetime, endDatetime)
+    autoRunAlgoSesh.clearDates(startDatetime, endDatetime)
+    autoRunAlgoSesh.solveDates(startDatetime, endDatetime)
 
-    algoSesh.updateTakedowns()
+    autoRunAlgoSesh.updateTakedowns()
+    autoRunAlgoSesh.close()
 
 @app.route("/", methods=['POST', 'GET'])
 @app.route("/tdconsole", methods=['POST', 'GET'])
@@ -71,6 +68,9 @@ def tdconsole():
             endDatetime = None
         startDatetime = datetime.datetime.strptime(resetDate, "%m/%d/%Y")
 
+        if (startDatetime > datetime.datetime.now()):
+            raise HTTPException(300, "Datetime entered before now!")
+
         algoSesh.clearDates(startDatetime, endDatetime)
         algoSesh.solveDates(startDatetime, endDatetime)
         return redirect(url_for('.tdconsole'))
@@ -108,6 +108,7 @@ def tdconsole():
 
 @app.route("/tdtrade", methods=['GET'])
 def tdtrade():
+    dbSession = db.Session()
     mode = request.args.get('mode')
     token = request.args.get('token')
     uid = request.args.get('uid')
@@ -121,10 +122,12 @@ def tdtrade():
         if mode == "purchase":
             dbSession.swapAssignment(uid, tradeUid, mealDateId)
 
+    dbSession.close()
     return redirect(url_for('.tdinfo'))
 
 @app.route("/tdinfo", methods=['POST', 'GET'])
 def tdinfo():
+    dbSession = db.Session()
     userLoginForm = UserLoginForm()
     takedownTradeForm = TakedownTradeForm()
     def tdPage(userEmail):
@@ -153,10 +156,12 @@ def tdinfo():
 
         if userEmail:
             resp.set_cookie("userEmail", userEmail)
+        dbSession.close()
         return resp
 
     if userLoginForm.submit.data and userLoginForm.validate_on_submit():
         userEmail = userLoginForm.email.data
+        dbSession.close()
         return tdPage(userEmail)
 
     if takedownTradeForm.submitData.data and takedownTradeForm.validate_on_submit():
@@ -166,10 +171,18 @@ def tdinfo():
         tid = dbSession.getTid(dateId)
         traders = dbSession.getAvailibility(tid)
         mail.TakedownTradeMessage(uid, dateId, traders)
+        dbSession.close()
         return tdPage(userEmail)
 
     try:
         userEmail = request.cookies.get("userEmail")
+        dbSession.close()
         return tdPage(userEmail)
     except Exception:
+        dbSession.close()
         return tdPage(None)
+
+
+sched = BackgroundScheduler()
+sched.start()
+sched.add_job(auto_run_scheduler, trigger="cron", day_of_week='sat-sun', hour='0-18')

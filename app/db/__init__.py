@@ -95,11 +95,15 @@ class Session:
 
     def getAvailibility(self, tid):  # Working
         c = self.createCursor()
-        return [x[0] for x in c.execute("SELECT uid FROM avalibility WHERE tid = ?", (tid,)).fetchall()]
+        ret = [x[0] for x in c.execute("SELECT uid FROM avalibility WHERE tid = ?", (tid,)).fetchall()]
+        c.close()
+        return ret
 
     def getUserAvailibility(self, uid):
         c = self.createCursor()
-        return [x[0] for x in c.execute("SELECT tid FROM avalibility WHERE uid = ?", (uid,)).fetchall()]
+        ret = [x[0] for x in c.execute("SELECT tid FROM avalibility WHERE uid = ?", (uid,)).fetchall()]
+        c.close()
+        return ret
 
     def getScore(self, uid):
         c = self.createCursor()
@@ -115,15 +119,17 @@ class Session:
 
     def getDates(self, startDate, endDate):  # Working
         c = self.createCursor()
-        return [x for x in c.execute("SELECT dateId, tid FROM schedule WHERE date BETWEEN ? AND ?", (startDate, endDate))]
+        ret = [x for x in c.execute("SELECT dateId, tid FROM schedule WHERE date BETWEEN ? AND ?", (startDate, endDate))]
+        c.close()
+        return ret
 
     def getPenaltyBalance(self, uid):
         c = self.createCursor()
         c.execute("SELECT penaltyScore FROM penaltyScores WHERE uid = ?", (uid,))
         ret = c.fetchone()
+        c.close()
         if ret:
             ret = ret[0]
-            c.close()
             return ret
         return 0
 
@@ -131,9 +137,9 @@ class Session:
         c = self.createCursor()
         c.execute("SELECT tdScore from tdScores WHERE uid = ?", (uid,))
         ret = c.fetchone()
+        c.close()
         if ret:
             ret = ret[0]
-            c.close()
             return ret
         return 0
 
@@ -152,6 +158,7 @@ class Session:
             c.close()
             return ret
         except Exception:
+            c.close()
             return 0
 
     def getPenalties(self, uid):
@@ -161,6 +168,7 @@ class Session:
             c.close()
             return ret
         except Exception:
+            c.close()
             return 0
 
     def testEmail(self, email):
@@ -179,6 +187,7 @@ class Session:
             ret = ret[0]
             return ret
         print("Couldn't find most recent takedown.")
+        c.close()
         return 0
 
     def getDate(self, date):
@@ -190,6 +199,7 @@ class Session:
             c.close()
             return ret
         else:
+            c.close()
             return False
 
     def getTid(self, dateId):
@@ -319,6 +329,7 @@ class Session:
             now = now - datetime.timedelta(hours=18.5)
         c.execute("SELECT MIN(dateId) FROM schedule WHERE date > ?", (now,))
         ret = c.fetchone()
+        c.close()
         if ret:
             return ret[0]
         return 0

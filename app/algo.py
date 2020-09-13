@@ -200,6 +200,9 @@ class Session:
         points = float(points * -1)
         self.dbSession.applyPenalty(dt, uid, points, description)
 
+    def close(self):
+        self.dbSession.close()
+
 if __name__ == "__main__":
     s = Session()
     # s.readResponseForms()
