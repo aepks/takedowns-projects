@@ -78,9 +78,11 @@ class Session:
                 day = vals[0]
                 meal = vals[1]
                 c.execute("SELECT tid FROM takedowns WHERE day = ? AND meal = ?", (day, meal))
+                tid = "None";
                 for row in c:
                     tid = row[0]
-                c.execute("INSERT INTO avalibility VALUES (?, ?)", (uid, tid))
+                if tid != "None":
+                    c.execute("INSERT INTO avalibility VALUES (?, ?)", (uid, tid))
         else:
             vals = avalibility.split()
             day = vals[0]
