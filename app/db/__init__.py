@@ -423,22 +423,19 @@ if __name__ == "__main__":
             i += 1
 
     nonDays = [
-        (7, 9, 2020),
-        (12, 10, 2020),
-        (25, 11, 2020),
-        (26, 11, 2020),
-        (27, 11, 2020),
-        (28, 11, 2020),
-        (29, 11, 2020)
+        (9, 2, 2021),
+        (10, 3, 2021),
+        (8, 4, 2021),
+        (30, 4, 2021),
     ]
     
     forbiddenDays = []
     for day in nonDays:
         forbiddenDays.append(datetime.datetime(day=day[0], month=day[1], year=day[2]))
 
-    start = datetime.datetime(day=31, month=8, year=2020)
+    start = datetime.datetime(day=19, month=1, year=2021)
     date = start
-    end = datetime.datetime(day=12, month=12, year=2020)
+    end = datetime.datetime(day=12, month=12, year=2021)
 
     days = [0, 2, 4, 6, 8]
 
@@ -449,6 +446,6 @@ if __name__ == "__main__":
                 c.execute("INSERT INTO schedule VALUES (?, ?, ?)", (None, date.isoformat(), base_tid))
                 c.execute("INSERT INTO schedule VALUES (?, ?, ?)", (None, date.isoformat(), base_tid + 1))
         date = date + datetime.timedelta(days=1)
-    #
+    
     c.close()
     conn.commit()

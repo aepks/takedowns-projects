@@ -10,6 +10,7 @@ import datetime
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
+from werkzeug.exceptions import HTTPException
 
 algoSesh = algo.Session()
 responseFormsSession = responseForms.Session()

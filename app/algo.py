@@ -111,7 +111,7 @@ class Session:
             availUsers = self.dbSession.getAvailibility(date[1])
             chosenUsers = []
             newMemberChosen = False
-            while availUsers and len(chosenUsers) < 3:
+            while availUsers and len(chosenUsers) < 2:
                 tdScoreUsers = []
                 # print(availUsers)
                 userScores = [(uid, self.dbSession.getScore(uid)) for uid in availUsers]
