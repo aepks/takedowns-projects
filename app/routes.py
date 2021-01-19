@@ -131,6 +131,8 @@ def tdinfo():
     dbSession = db.Session()
     userLoginForm = UserLoginForm()
     takedownTradeForm = TakedownTradeForm()
+    stats = dbSession.getTDStats()
+
     def tdPage(userEmail):
         if userEmail is None:
             user = [None]
@@ -153,10 +155,11 @@ def tdinfo():
             user = [pname, tdScore, penaltyScore, userPenalties, assignments]
 
         resp = make_response(render_template(
-            "tdinfo.html", user=user, userLoginForm=userLoginForm, takedownTradeForm=takedownTradeForm))
+            "tdinfo.html", user=user, userLoginForm=userLoginForm, takedownTradeForm=takedownTradeForm, stats=stats))
 
         if userEmail:
             resp.set_cookie("userEmail", userEmail)
+
         dbSession.close()
         return resp
 
