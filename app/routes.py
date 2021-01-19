@@ -133,6 +133,7 @@ def tdinfo():
     userLoginForm = UserLoginForm()
     takedownTradeForm = TakedownTradeForm()
     stats = dbSession.getTDStats()
+    print(stats)
 
     def tdPage(userEmail):
         if userEmail is None:
