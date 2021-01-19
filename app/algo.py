@@ -83,7 +83,7 @@ class Session:
 
     def updateTakedowns(self):
         curDate = datetime.datetime.now()
-        # curDate = datetime.datetime(day=1, month=2, year=2020)
+        # curDate = datetime.datetime(day=18, month=1, year=2021)
 
         if curDate.weekday() < 5:
             weekStart = curDate - datetime.timedelta(days=curDate.weekday())
@@ -133,7 +133,7 @@ class Session:
                 # print(sortedUserTDDates)
 
                 for user in sortedUserTDDates:
-                    if len(chosenUsers) == 3:
+                    if len(chosenUsers) == 2:
                         break
                     if (date[0] - user[1]) < 1:
                         print("Fuck the rules, a takedown a day keeps the doctor away", user)
@@ -206,6 +206,6 @@ class Session:
 if __name__ == "__main__":
     s = Session()
     # s.readResponseForms()
-    s.clearDates(datetime.datetime(day=1, month=2, year=2020))
+    s.clearDates(datetime.datetime(day=1, month=2, year=2021))
     s.solveDates()
     s.updateTakedowns()

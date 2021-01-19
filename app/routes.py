@@ -61,9 +61,9 @@ def tdconsole():
     if solveDates.submit.data and solveDates.validate_on_submit():
         algoSesh.readResponseForms()
         algoSesh.readPenalties()
-        resetDate = solveDates.resetDate.data + "/2020"
+        resetDate = solveDates.resetDate.data + "/2021"
         if solveDates.endResetDate.data:
-            endResetDate = solveDates.endResetDate.data + "/2020"
+            endResetDate = solveDates.endResetDate.data + "/2021"
             endDatetime = datetime.datetime.strptime(endResetDate, "%m/%d/%Y")
         else:
             endDatetime = None
@@ -74,11 +74,12 @@ def tdconsole():
 
         algoSesh.clearDates(startDatetime, endDatetime)
         algoSesh.solveDates(startDatetime, endDatetime)
+        algoSesh.updateTakedowns()
         return redirect(url_for('.tdconsole'))
 
     if dateInput.submit.data and dateInput.validate_on_submit():
-        startDate = dateInput.startDate.data + "/2020"
-        endDate = dateInput.endDate.data + "/2020"
+        startDate = dateInput.startDate.data + "/2021"
+        endDate = dateInput.endDate.data + "/2021"
         startDatetime = datetime.datetime.strptime(startDate, "%m/%d/%Y")
         endDatetime = datetime.datetime.strptime(
             endDate, "%m/%d/%Y") + datetime.timedelta(days=1)
@@ -177,10 +178,10 @@ def tdinfo():
 
     try:
         userEmail = request.cookies.get("userEmail")
-        dbSession.close()
+        # dbSession.close()
         return tdPage(userEmail)
     except Exception:
-        dbSession.close()
+        # dbSession.close()
         return tdPage(None)
 
 
