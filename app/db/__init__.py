@@ -4,8 +4,11 @@ from base64 import b64encode
 import os
 
 class Session:
-    def createCursor(self):
+
+    def __init__(self):
         self.conn = sqlite3.connect("./app/db/takedowns.db")
+
+    def createCursor(self):
         return self.conn.cursor()
 
     def commit(self):
@@ -335,6 +338,13 @@ class Session:
         if ret:
             return ret[0]
         return 0
+
+    def getTDStats(self):
+        c = self.createCursor()
+        c.execute("SELECT pname, tdScore, penaltyScore FROM users NATURAL JOIN tdScores NATURAL JOIN penaltyScores")
+        ret = [vals for vals in c]
+        c.close()
+        return ret
 
     def close(self):
         self.conn.commit()

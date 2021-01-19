@@ -1,7 +1,5 @@
-{% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
-
-{% block app_content %}
+{% extends "base.html" %} {% import "bootstrap/wtf.html" as wtf %} {% block
+app_content %}
 <div class="container">
   <h1>Takedown Statistics:</h1>
   <div class="row">
@@ -12,7 +10,7 @@
     <div class="col-md-6">
       <h3>User Information</h3>
       {{ wtf.quick_form(userLoginForm) }}
-      <br>
+      <br />
       {% if user[0] %}
       <ul>
         <li><strong>Preferred name: </strong>{{ user[0] }}</li>
@@ -32,7 +30,11 @@
         {% endfor %}
       </ul>
       <h5>Penalty Details</h5>
-      <p><i>Note: Positive numbers are penalties, negative numbers are credits</i></p>
+      <p>
+        <i
+          >Note: Positive numbers are penalties, negative numbers are credits</i
+        >
+      </p>
       {% if user[3] != [] %}
       <ol>
         {% for penalty in user[3] %}
@@ -42,15 +44,28 @@
             <li><strong>Penalty size: </strong>{{ penalty[1] }}</li>
             <li><strong>Reason: </strong>{{ penalty[2] }}</li>
           </ul>
-          <br>
+          <br />
           {% endfor %}
         </li>
       </ol>
       {% else %}
       <p>No penalties!</p>
-      {% endif %}
-      {% endif %}
+      {% endif %} {% endif %}
     </div>
+  </div>
+  <div class="row">
+    <h2>List of tdScore and penaltyScore by user name</h2>
+    <ul>
+      {% for row in stats %}
+      <li>
+        {{ row[0] }}:
+        <ul>
+          <li>TDScore: {{ row[1] }}</li>
+          <li>PenaltyScore: {{ row[2] }}</li>
+        </ul>
+      </li>
+      {% endfor %}
+    </ul>
   </div>
 </div>
 
