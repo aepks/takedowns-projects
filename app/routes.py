@@ -20,7 +20,7 @@ responseFormsSession = responseForms.Session()
 def auto_run_scheduler():
     autoRunAlgoSesh = algo.Session()
     startDatetime = datetime.datetime.now()
-    endDatetime = startDatetime + datetime.timedelta(days=7)
+    endDatetime = datetime.datetime(month=12, day=31, year=2021)
 
     autoRunAlgoSesh.clearDates(startDatetime, endDatetime)
     autoRunAlgoSesh.solveDates(startDatetime, endDatetime)

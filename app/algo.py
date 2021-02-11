@@ -135,7 +135,7 @@ class Session:
                 for user in sortedUserTDDates:
                     if len(chosenUsers) == 2:
                         break
-                    if (date[0] - user[1]) < 1:
+                    if (date[0] - user[1]) < 7:
                         print("Fuck the rules, a takedown a day keeps the doctor away", user)
                         availUsers.remove(user[0])
                         continue
