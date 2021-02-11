@@ -128,7 +128,7 @@ class Session:
                 # Now, tdScoreUsers contains a list of all users with lowest score.
                 availUserTDDate = [(user[0], 
                     self.dbSession.getMostRecentTakedown(user[0], date[0]), 
-                    self.dbSession.getTid(self.dbSession.getMostRecentTakedown(user[0], date[0]))) 
+                    self.dbSession.getTid(self.dbSession.getMostRecentTakedown(user[0], date[0])))
                 for user in tdScoreUsers]
 
                 sortedUserTDDates = sorted(
@@ -138,11 +138,11 @@ class Session:
 
                 for user in sortedUserTDDates:
                     delta = date[0] - user[1]
-                    if(date[0] - user[1] == date[1] - user[2]):
-                        delta += 100 # highly disincentivize two takedowns a week
+                    # if(date[0] - user[1] == date[1] - user[2]):
+                    #     delta += 100 # highly disincentivize two takedowns a week
                     if len(chosenUsers) == 2:
                         break
-                    if (date[0] - user[1]) < 7:
+                    if delta < 7:
                         availUsers.remove(user[0])
                         continue
                     if self.dbSession.isNewMember(user[0]) and newMemberChosen:
