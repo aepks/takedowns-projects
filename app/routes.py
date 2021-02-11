@@ -10,8 +10,6 @@ import datetime
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from werkzeug.exceptions import HTTPException
-
 algoSesh = algo.Session()
 responseFormsSession = responseForms.Session()
 # instacartSession = instacart.Session()
@@ -69,8 +67,9 @@ def tdconsole():
             endDatetime = None
         startDatetime = datetime.datetime.strptime(resetDate, "%m/%d/%Y")
 
-        if (startDatetime > datetime.datetime.now()):
-            raise HTTPException(300, "Datetime entered before now!")
+        if (startDatetime < datetime.datetime.now()):
+            print("Error! I'm redirecting you to google becasue that is what it is")
+            return redirect("www.google.com")
 
         algoSesh.clearDates(startDatetime, endDatetime)
         algoSesh.solveDates(startDatetime, endDatetime)
