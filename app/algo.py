@@ -104,39 +104,45 @@ class Session:
             startDate = datetime.datetime(day=1, month=2, year=200)  # DEBUG
             endDate = datetime.datetime(day=5, month=7, year=20200)
         dates = self.dbSession.getDates(
-            startDate.isoformat(), endDate.isoformat())
+            startDate.isoformat(), endDate.isoformat()) # list of (dateId, tid)
         for date in dates:
             if self.dbSession.getAssignments(date[0]):
                 continue
-            availUsers = self.dbSession.getAvailibility(date[1])
+            availUsers = self.dbSession.getAvailibility(date[1]) # list of UIDs
             chosenUsers = []
             newMemberChosen = False
             while availUsers and len(chosenUsers) < 2:
                 tdScoreUsers = []
                 # print(availUsers)
                 userScores = [(uid, self.dbSession.getScore(uid)) for uid in availUsers]
+                userScores = sorted(userScores, key=lambda x: x[1])
                 minScore = userScores[0][1]
-                for user in userScores:
-                    if user[1] < minScore:
-                        minScore = user[1]
+                # getScore returns TDScore - penaltyScore. 
+                # format: [(uid, score)]
 
                 for user in userScores:
                     if user[1] == minScore:
                         tdScoreUsers.append(user)
                         # print("User ", user[0], " not added.")
 
-                # Now, availUsers contains a list of all users with lowest score.
-                availUserTDDate = [(user[0], self.dbSession.getMostRecentTakedown(user[0], date[0])) for user in tdScoreUsers]
+                # Now, tdScoreUsers contains a list of all users with lowest score.
+                availUserTDDate = [(user[0], 
+                    self.dbSession.getMostRecentTakedown(user[0], date[0]), 
+                    self.dbSession.getTid(self.dbSession.getMostRecentTakedown(user[0], date[0]))) 
+                for user in tdScoreUsers]
+
                 sortedUserTDDates = sorted(
-                    availUserTDDate, key = lambda x: x[0])
+                    availUserTDDate, key = lambda x: x[1]) # I think this was responsible for the bug. 
 
                 # print(sortedUserTDDates)
 
                 for user in sortedUserTDDates:
+                    delta = date[0] - user[1]
+                    if(date[0] - user[1] == date[1] - user[2]):
+                        delta += 100 # highly disincentivize two takedowns a week
                     if len(chosenUsers) == 2:
                         break
                     if (date[0] - user[1]) < 7:
-                        print("Fuck the rules, a takedown a day keeps the doctor away", user)
                         availUsers.remove(user[0])
                         continue
                     if self.dbSession.isNewMember(user[0]) and newMemberChosen:
