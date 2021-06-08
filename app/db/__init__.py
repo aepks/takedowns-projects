@@ -2,21 +2,64 @@ import sqlite3
 import datetime
 from base64 import b64encode
 import os
+from sqlite3.dbapi2 import OperationalError
+from app.db.ddl import ddl
+
+PATH = "./app/db/takedowns.db"
+START = datetime.datetime(day=19, month=1, year=2021)
+END = datetime.datetime(day=12, month=12, year=2021)
 
 class Session:
-    def createCursor(self):
-        self.conn = sqlite3.connect("./app/db/takedowns.db")
-        return self.conn.cursor()
+    def __init__(self):
+        conn = self.connect()
+        c = conn.cursor()
+        if len(c.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()) == 0:
+            print("Regenerating database!")
+            for x in ddl:
+                c.execute(x)
 
-    def commit(self):
-        self.conn.commit()
+            meals = ("Lunch", "Dinner")
+            days = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+
+            for day in days:
+                for meal in meals:
+                    c.execute("INSERT INTO takedowns VALUES (NULL, ?, ?)", (day, meal))
+
+            nonDays = [
+                (9, 2, 2021),
+                (10, 3, 2021),
+                (8, 4, 2021),
+                (30, 4, 2021),
+            ]
+            
+            forbiddenDays = []
+            for day in nonDays:
+                forbiddenDays.append(datetime.datetime(day=day[0], month=day[1], year=day[2]))
+
+            date = START
+
+            days = [1, 3, 5, 7, 9]
+
+            while (END-START) >= (date-START):
+                if date.weekday() < 5:
+                    if date not in forbiddenDays:
+                        base_tid = days[date.weekday()]
+                        c.execute("INSERT INTO schedule VALUES (?, ?, ?)", (None, date.isoformat(), base_tid))
+                        c.execute("INSERT INTO schedule VALUES (?, ?, ?)", (None, date.isoformat(), base_tid + 1))
+                date = date + datetime.timedelta(days=1)
+
+        conn.commit()
+        c.close()
+        conn.close()
+
+    def connect(self):
+        return sqlite3.connect(PATH)
 
     def readAvailability(self, data):  # Takes a list as an arg.
         newMemberResponse = {
             "Yes": 1,
             "No": 0
         }
-
         email = data[0]
         pname = data[1]
         availibility = data[2]
@@ -25,7 +68,9 @@ class Session:
         if newMember == 1:
             pname = pname + " (NM)"
 
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
+
         c.execute("SELECT * FROM users WHERE email = ?", (email,))
         uid = None
         for row in c:
@@ -37,39 +82,50 @@ class Session:
             uid = self.addUser(email, pname, newMember)
             self.addAvailibility(uid, availibility)
         c.close()
+        conn.close()
+
 
     def isNewMember(self, uid):
-        c = self.createCursor()
-        c.execute("SELECT newMember FROM users WHERE uid = ?", (uid,))
-        if c.fetchone()[0] == 1:
-            c.close()
-            return True
+        conn = self.connect()
+        c = conn.cursor()
+        v = c.execute("SELECT newMember FROM users WHERE uid = ?", (uid,)).fetchone()
+        if v == None:
+            raise ValueError("UID not found!" + str(uid))
+        
+        r = bool(v[0])
         c.close()
-        return False
+        conn.close()
+        return r
 
     def addUser(self, email, pname, newMember):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("INSERT INTO users VALUES (?, ?, ?, ?)", (
             None, pname.strip(), email, newMember))
         c.execute("SELECT last_insert_rowid()")
         uid = c.fetchone()[0]
+        conn.commit()
         c.close()
-        self.commit()
-        return uid  # Working
+        conn.close()
+        return uid
 
     def updateName(self, uid, pname):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("UPDATE users SET pname = ? WHERE uid = ?", (pname, uid,))
         c.close()
-        self.commit()
-        return True  # Working
+        conn.commit()
+        conn.close()
+        return True
 
     def addAvailibility(self, uid, avalibility):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("DELETE FROM avalibility WHERE uid = ?", (uid,))
         if not avalibility:
             c.close()
-            self.commit()
+            conn.commit()
+            conn.close
             return True
 
         if len(avalibility.split(", ")) > 1:
@@ -78,7 +134,7 @@ class Session:
                 day = vals[0]
                 meal = vals[1]
                 c.execute("SELECT tid FROM takedowns WHERE day = ? AND meal = ?", (day, meal))
-                tid = "None";
+                tid = "None"
                 for row in c:
                     tid = row[0]
                 if tid != "None":
@@ -91,24 +147,30 @@ class Session:
             for row in c:
                 tid = row[0]
             c.execute("INSERT INTO avalibility VALUES (?, ?)", (uid, tid))
-        c.close()
-        self.commit()
+
+        conn.commit()
+        conn.close()
         return True  # Working
 
     def getAvailibility(self, tid):  # Working
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         ret = [x[0] for x in c.execute("SELECT uid FROM avalibility WHERE tid = ?", (tid,)).fetchall()]
         c.close()
+        conn.close()
         return ret
 
     def getUserAvailibility(self, uid):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         ret = [x[0] for x in c.execute("SELECT tid FROM avalibility WHERE uid = ?", (uid,)).fetchall()]
         c.close()
+        conn.close()
         return ret
 
     def getScore(self, uid):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         tdScore, penaltyScore = 0, 0
         testTdScore = c.execute("SELECT tdScore FROM tdScores WHERE uid = ?", (uid,)).fetchone()
         if testTdScore:
@@ -117,162 +179,197 @@ class Session:
         if testPenaltyScore:
             penaltyScore = testPenaltyScore[0]
         c.close()
+        conn.close()
         return int(tdScore - penaltyScore)
 
     def getDates(self, startDate, endDate):  # Working
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         ret = [x for x in c.execute("SELECT dateId, tid FROM schedule WHERE date BETWEEN ? AND ?", (startDate, endDate))]
         c.close()
+        conn.close()
         return ret
 
     def getPenaltyBalance(self, uid):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("SELECT penaltyScore FROM penaltyScores WHERE uid = ?", (uid,))
         ret = c.fetchone()
         c.close()
+        conn.close()
         if ret:
             ret = ret[0]
             return ret
         return 0
 
     def getTakedownScore(self, uid):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("SELECT tdScore from tdScores WHERE uid = ?", (uid,))
         ret = c.fetchone()
         c.close()
+        conn.close()
         if ret:
             ret = ret[0]
             return ret
         return 0
 
     def getAverageTdScore(self):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("SELECT avg(tdScore) FROM tdScores")
         ret = round(c.fetchone()[0], 2)
         c.close()
+        conn.close()
         return ret
 
     def getAveragePenaltyScore(self):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         try:
             c.execute("SELECT avg(penaltyScore) FROM penaltyScores")
             ret = round(c.fetchone()[0], 2)
             c.close()
+            conn.close()
             return ret
         except Exception:
             c.close()
+            conn.close()
             return 0
 
     def getPenalties(self, uid):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         try:
             ret = [list(x) for x in c.execute("SELECT timestamp, penalty, description FROM penalties WHERE uid = ?", (uid,))]
             c.close()
+            conn.close()
             return ret
         except Exception:
             c.close()
+            conn.close()
             return 0
 
     def testEmail(self, email):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         if c.execute("SELECT pname FROM users WHERE email = ?", (email,)).fetchone():
             c.close()
+            conn.close()
             return True
         c.close()
+        conn.close()
         return False
 
     def getMostRecentTakedown(self, uid, dateId):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         ret = c.execute("SELECT max(dateId) FROM assignments WHERE uid = ? AND dateId < ?", (uid, dateId)).fetchone()
         c.close()
+        conn.close()
         if ret[0]:
             ret = ret[0]
             return ret
-        print("Couldn't find most recent takedown.")
-        c.close()
         return 0
 
     def getDate(self, date):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("SELECT dateId FROM schedule WHERE date = ? ORDER BY dateId ASC LIMIT 1", (date,))
         ret = c.fetchone()
         if ret:
             ret = ret[0]
             c.close()
+            conn.close()
             return ret
         else:
             c.close()
+            conn.close()
             return False
 
     def getTid(self, dateId):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("SELECT tid FROM schedule WHERE dateId = ?", (dateId,))
         ret = c.fetchone()
         if ret:
             ret = ret[0]
             c.close()
+            conn.close()
             return ret
         else:
             c.close()
+            conn.close()
             return False
 
     def getIsoDate(self, dateId):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("SELECT date FROM schedule WHERE dateId = ?", (dateId,))
         ret = c.fetchone()[0]
         c.close()
+        conn.close()
         return ret
 
     def getPname(self, uid):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("SELECT pname FROM users WHERE uid = ?", (uid,))
         uid = c.fetchone()[0]
         c.close()
+        conn.close()
         return uid
 
     def getEmail(self, uid):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("SELECT email FROM users WHERE uid = ?", (uid,))
         ret = c.fetchone()[0]
         c.close()
+        conn.close()
         return ret
 
     def clearDate(self, dateId):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("DELETE FROM assignments WHERE dateId = ?", (dateId,))
-        self.commit()
         c.close()
+        conn.close()
         return True
 
     def swapAssignment(self, uid, tradeUid, dateId):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("UPDATE assignments SET uid = ? WHERE dateId = ? AND uid = ?", (tradeUid, dateId, uid))
-        self.commit()
         c.close()
+        conn.close()
 
     def getSwapKey(self):
         token = b64encode(os.urandom(10)).decode('utf-8')
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("INSERT INTO swapTokens VALUES (?)", (token,))
-        self.commit()
         c.close()
+        conn.close()
         return token
 
     def voidSwapKey(self, token):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("DELETE FROM swapTokens WHERE token = ?", (token,))
         rowcount = bool(c.rowcount)
-        self.commit()
         return rowcount
 
     def getAssignments(self, dateId):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         try:
             ret = c.execute("SELECT uid FROM assignments WHERE dateId = ?",(dateId,))
             users = []
             for user in ret:
                 users.append(user[0])
             c.close()
+            conn.close()
             if users:
                 return users
             else:
@@ -280,49 +377,60 @@ class Session:
 
         except Exception:  # If there's no rows returned
             c.close()
+            conn.close()
             return None
 
     def getUserAssignments(self, uid):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         ret = c.execute("SELECT * FROM assignments WHERE uid = ?", (uid,))
         users = []
         for user in ret:
             users.append(user)
         c.close()
+        conn.close()
         if users:
             return users
         else:
             return []
 
     def assignUser(self, dateId, uid):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("INSERT INTO assignments VALUES (?, ?)", (dateId, uid))
         c.close()
-        self.commit()
+        conn.commit()
+        conn.close()
         return True
 
     def applyPenalty(self, timestamp, uid, penalty, description):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("INSERT INTO penalties VALUES (?, ?, ?, ?)", (timestamp, uid, penalty, description))
         c.close()
-        self.commit()
+        conn.commit()
+        conn.close()
         return True
 
     def getUid(self, email):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         ret = c.execute("SELECT uid FROM users WHERE email = ?", (email,)).fetchone()[0]
         c.close()
+        conn.close()
         return ret
 
     def getUsers(self):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("SELECT email, pname FROM users ORDER BY pname ASC")
         ret = [vals for vals in c]
         c.close()
         return ret
 
     def getCurMealDateId(self):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         now = datetime.datetime.now()
         hours = now.hour
         if hours < 13.5:
@@ -332,132 +440,19 @@ class Session:
         c.execute("SELECT MIN(dateId) FROM schedule WHERE date > ?", (now,))
         ret = c.fetchone()
         c.close()
+        conn.close()
         if ret:
             return ret[0]
         return 0
 
     def getTDStats(self):
-        c = self.createCursor()
+        conn = self.connect()
+        c = conn.cursor()
         c.execute("SELECT pname, tdScore, IFNULL(penaltyScore, 0) FROM users NATURAL JOIN tdScores LEFT JOIN penaltyScores")
         ret = c.fetchall()
         c.close()
+        conn.close()
         return ret
 
     def close(self):
         return 
-        
-        # if self.conn:
-        #     self.conn.commit()
-        # return # do nothing 
-        # self.conn.commit()
-        # self.conn.close()
-
-
-if __name__ == "__main__":
-    conn = sqlite3.connect("takedowns.db")
-    c = conn.cursor()
-    ddl = (
-        """
-        CREATE TABLE IF NOT EXISTS takedowns (
-            tid INTEGER PRIMARY KEY AUTOINCREMENT,
-            day TEXT,
-            meal TEXT
-        )
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS schedule (
-            dateId INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TIMESTAMP,
-            tid INTEGER,
-            FOREIGN KEY (tid) REFERENCES takedowns
-        )
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS users (
-            uid INTEGER PRIMARY KEY AUTOINCREMENT,
-            pname TEXT,
-            email TEXT UNIQUE,
-            newMember INTEGER
-        )
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS avalibility (
-            uid INT,
-            tid INT,
-            PRIMARY KEY (uid, tid),
-            FOREIGN KEY (uid) REFERENCES users,
-            FOREIGN KEY (tid) REFERENCES takedowns
-        )
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS assignments (
-            dateId INT,
-            uid INT,
-            PRIMARY KEY (dateId, uid),
-            FOREIGN KEY (uid) REFERENCES users,
-            FOREIGN KEY (dateId) REFERENCES schedule
-        )
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS penalties (
-            timestamp TEXT,
-            uid INT,
-            penalty NUMERIC,
-            description TEXT,
-            FOREIGN KEY (uid) REFERENCES users,
-            PRIMARY KEY (timestamp, uid)
-        )
-        """,
-        """
-        CREATE VIEW tdScores AS
-        SELECT uid, count(uid) AS tdScore
-        FROM assignments
-        GROUP BY uid;
-        """,
-        """
-        CREATE VIEW penaltyScores AS
-        SELECT uid, sum(penalty) AS penaltyScore
-        FROM penalties
-        GROUP BY uid;
-        """
-        )
-
-    [c.execute(table) for table in ddl]
-    conn.commit()
-
-    meals = ("Lunch", "Dinner")
-    days = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
-
-    i = 0
-    for day in days:
-        for meal in meals:
-            c.execute("INSERT INTO takedowns VALUES (?, ?, ?)", (i, day, meal))
-            i += 1
-
-    nonDays = [
-        (9, 2, 2021),
-        (10, 3, 2021),
-        (8, 4, 2021),
-        (30, 4, 2021),
-    ]
-    
-    forbiddenDays = []
-    for day in nonDays:
-        forbiddenDays.append(datetime.datetime(day=day[0], month=day[1], year=day[2]))
-
-    start = datetime.datetime(day=19, month=1, year=2021)
-    date = start
-    end = datetime.datetime(day=12, month=12, year=2021)
-
-    days = [0, 2, 4, 6, 8]
-
-    while (end-start) >= (date-start):
-        if date.weekday() < 5:
-            if date not in forbiddenDays:
-                base_tid = days[date.weekday()]
-                c.execute("INSERT INTO schedule VALUES (?, ?, ?)", (None, date.isoformat(), base_tid))
-                c.execute("INSERT INTO schedule VALUES (?, ?, ?)", (None, date.isoformat(), base_tid + 1))
-        date = date + datetime.timedelta(days=1)
-    
-    c.close()
-    conn.commit()

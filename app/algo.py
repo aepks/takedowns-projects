@@ -83,8 +83,6 @@ class Session:
 
     def updateTakedowns(self):
         curDate = datetime.datetime.now()
-        # curDate = datetime.datetime(day=18, month=1, year=2021)
-
         if curDate.weekday() < 5:
             weekStart = curDate - datetime.timedelta(days=curDate.weekday())
         else:
@@ -92,12 +90,16 @@ class Session:
                 datetime.timedelta(days=(7 - curDate.weekday()))
         dates = self.dbSession.getDates(
             weekStart, weekStart + datetime.timedelta(days=5))
+
+        assignmentList = []
         for date in dates:
             dateId, tid = date
             assignmentUids = self.dbSession.getAssignments(dateId)
             assignments = [self.dbSession.getPname(
                 uid).strip() for uid in assignmentUids]
-            self.responseForms.updateTakedownsForm(tid, assignments)
+            assignmentList.append((tid, assignments))
+
+        self.responseForms.updateTakedownsForm(assignmentList)
 
     def solveDates(self, startDate=None, endDate=None):
         if not startDate or not endDate:
@@ -126,10 +128,10 @@ class Session:
                         # print("User ", user[0], " not added.")
 
                 # Now, tdScoreUsers contains a list of all users with lowest score.
-                availUserTDDate = [(user[0], 
+                availUserTDDate = filter(lambda x: x != None, ((user[0], 
                     self.dbSession.getMostRecentTakedown(user[0], date[0]), 
                     self.dbSession.getTid(self.dbSession.getMostRecentTakedown(user[0], date[0])))
-                for user in tdScoreUsers]
+                for user in tdScoreUsers))
 
                 sortedUserTDDates = sorted(
                     availUserTDDate, key = lambda x: x[1]) # I think this was responsible for the bug. 

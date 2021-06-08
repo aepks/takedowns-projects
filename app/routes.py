@@ -1,10 +1,9 @@
 from app import app
 from flask import request, render_template, make_response, redirect, url_for
-from app.forms import DateInput, UpdateTakedownsSheet, SolveDateForm, GoodBoyPointForm, DefaultInstacartOrderForm, SaveInstacartOrderSheet, UserLoginForm, TakedownTradeForm
+from app.forms import DateInput, UpdateTakedownsSheet, SolveDateForm, GoodBoyPointForm, UserLoginForm, TakedownTradeForm
 import app.algo as algo
 import app.db as db
 import app.responseForms as responseForms
-import app.instacart as instacart
 import app.mail as mail
 import datetime
 
@@ -12,7 +11,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 algoSesh = algo.Session()
 responseFormsSession = responseForms.Session()
-# instacartSession = instacart.Session()
 
 # Scheduler job
 def auto_run_scheduler():
@@ -33,20 +31,7 @@ def tdconsole():
     solveDates = SolveDateForm()
     gbpf = GoodBoyPointForm()
     utdsf = UpdateTakedownsSheet()
-    dio = DefaultInstacartOrderForm()
-    ordersheet = SaveInstacartOrderSheet()
-
-    # if ordersheet.password.data and ordersheet.password.data == "hunter2" and ordersheet.cartChoice.data and ordersheet.validate_on_submit():
-    #     cart = ordersheet.cartChoice.data
-    #     order = ordersheet.orderChoice.data
-    #     responseFormsSession.setInstacartOrder(order, instacartSession.getCartContents(cart))
     message = None
-    # if dio.password.data and dio.password.data == "hunter2" and dio.validate_on_submit():
-    #     order = responseFormsSession.getInstacartOrder(dio.order.data)
-    #     print(order)
-    #     for row in order:
-    #         print("Adding item. ", row[0], " ", row[2])
-    #         instacartSession.addItem(row[0], row[1])
 
     if gbpf.submit.data and gbpf.validate_on_submit():
         email = gbpf.email.data
@@ -67,10 +52,6 @@ def tdconsole():
             endDatetime = None
         startDatetime = datetime.datetime.strptime(resetDate, "%m/%d/%Y")
 
-        if (startDatetime < datetime.datetime.now()):
-            print("Error! I'm redirecting you to google becasue that is what it is")
-            return redirect("www.google.com")
-
         algoSesh.clearDates(startDatetime, endDatetime)
         algoSesh.solveDates(startDatetime, endDatetime)
         algoSesh.updateTakedowns()
@@ -84,7 +65,7 @@ def tdconsole():
             endDate, "%m/%d/%Y") + datetime.timedelta(days=1)
         data = algoSesh.getAssignments(startDatetime, endDatetime)
         resp = make_response(render_template(
-            "tdconsole.html", utdsf=utdsf, ordersheet=ordersheet, dio=dio, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=solveDates))
+            "tdconsole.html", utdsf=utdsf, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=solveDates))
         resp.set_cookie("startDate", startDate)
         resp.set_cookie("endDate", endDate)
         return resp
@@ -99,13 +80,13 @@ def tdconsole():
         endDatetime = datetime.datetime.strptime(
             endDate, "%m/%d/%Y") + datetime.timedelta(days=1)
         data = algoSesh.getAssignments(startDatetime, endDatetime)
-        return render_template("tdconsole.html", utdsf=utdsf, ordersheet=ordersheet, dio=dio, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=solveDates)
+        return render_template("tdconsole.html", utdsf=utdsf, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=solveDates)
 
     else:
         startDatetime = datetime.datetime.now() - datetime.timedelta(days=(datetime.datetime.now().weekday()))
         endDatetime = startDatetime + datetime.timedelta(days=40)
         data = algoSesh.getAssignments(startDatetime, endDatetime)
-        return render_template("tdconsole.html", utdsf=utdsf, ordersheet=ordersheet, dio=dio, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=solveDates)
+        return render_template("tdconsole.html", utdsf=utdsf, gbpf=gbpf, message=message, dataRows=data, dateInput=dateInput, clearDate=solveDates)
 
 @app.route("/tdtrade", methods=['GET'])
 def tdtrade():
@@ -132,7 +113,6 @@ def tdinfo():
     userLoginForm = UserLoginForm()
     takedownTradeForm = TakedownTradeForm()
     stats = dbSession.getTDStats()
-    print(stats)
 
     def tdPage(userEmail):
         if userEmail is None:

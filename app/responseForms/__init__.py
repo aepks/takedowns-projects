@@ -24,49 +24,6 @@ class Session:
         self.penaltiesWks = self.gc.open_by_key(
             "1VPOrmIxbn3PzY71UJXErlM9YZZM54g9vIylKOIqEKLQ")
         self.penaltiesSheet = self.penaltiesWks.worksheet("Penalties")
-        self.instacartOrderWorksheet = self.gc.open_by_key("1uFJTv9IwJXfhzpSjqQSVLPB0SX3PqYqD2q1-dMJd0lU")
-
-    def getInstacartOrders(self):
-        try:
-            return self.instacartOrderWorksheet.worksheet("index").get_all_values()[1:]
-        except Exception:
-            self.__init__()
-            return self.getInstacartOrders()
-
-    def getInstacartOrder(self, sheet):
-        try:
-            return self.instacartOrderWorksheet.worksheet(sheet).get_all_values()[1:]
-        except Exception:
-            self.__init__()
-            return self.getInstacartOrder(sheet)
-
-    def setInstacartOrder(self, sheet, items):
-        try:
-            self.instacartOrderWorksheet.add_worksheet(sheet, 250, 4)
-        except Exception:
-            pass
-
-        sheet = self.instacartOrderWorksheet.worksheet(sheet)
-        cells = sheet.range(f"A2:E100")
-        i = 0
-        j = 0
-        for item in items:
-            print(item)
-
-        print(len(items))
-        for cell in cells:
-            if i < len(items):
-                print(i,j, items[i])
-                cell.value = items[i][j]
-                j += 1
-                if j == 5:
-                    j = 0
-                    i += 1
-            else:
-                cell.value = ""
-
-        sheet.update_cells(cells)
-        return
 
     def getResponses(self):
         try:
@@ -83,18 +40,31 @@ class Session:
             self.__init__()
             return self.getResponses()
 
-    def updateTakedownsForm(self, tid, assignments):
+    def updateTakedownsForm(self, assignmentList):
+        cells = []
+        TID_KEY = {
+            1: 0,
+            2: 1,
+            3: 3,
+            4: 4,
+            5: 6,
+            6: 7,
+            7: 9,
+            8: 10,
+            9: 12,
+            10: 13
+        }
         try:
-            # Input types:
-            # tid: Integer
-            # assignments: Tuple of form (pname1, pname2, pname3)
-            assignment = ", ".join(assignments)
-            cell = "C" + str([2, 3, 5, 6, 8, 9, 11, 12, 14, 15][tid])
-            self.takedownsSheet.update_acell(cell, assignment)
+            cells = self.takedownsSheet.range("C2:C15")
+            for (tid, assignments) in assignmentList:
+                c = cells[(TID_KEY[tid])]
+                c.value = ", ".join(assignments)
+            self.takedownsSheet.update_cells(cells)
             return True
-        except Exception:
+
+        except gspread.exceptions.APIError:
             self.__init__()
-            return self.updateTakedownsForm(tid, assignments)
+            return self.updateTakedownsForm(assignmentList)
 
     def getPenalties(self):
         try:
@@ -113,7 +83,3 @@ class Session:
         except Exception:
             self.__init__()
             return self.getPenalties()
-
-if __name__ == "__main__":
-    session = Session()
-    print(session.sheet.get_all_values())
